@@ -66,3 +66,22 @@ export const soaDetailsController = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+
+// GET ALL RECORDS.
+export const soaDetailsGetAllController = async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      let model: any = Soa;
+      const data = await model.find();
+      if (!data) {
+        return res.status(404).json({ error: "not found!" });
+      }
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };

@@ -33,7 +33,7 @@ app.use(morgan("dev"));
 try {
   mongoConnect();
 } catch (error) {
-  console.log("DB CONNECT ERROR ", error);
+  console.log("DB CONNECT ERROR ",error);
 }
 
 // <------------------------- MULTER -------------------->
