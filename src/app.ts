@@ -2,24 +2,61 @@ import express, { Request, Response } from "express";
 const app = express();
 import multer from "multer";
 import xlsx from "xlsx";
-import { mongoConnect } from "./database/database";
+import morgan from "morgan";
+import { mongoConnect } from "./config/database";
+
+// <------------------------- MODELS IMPORT  -------------------->
 import { User } from "./models/user.model";
-import { CompanyOpen, companyOpenSchema } from "./models/company.model";
+import { CompanyOpen } from "./models/company.model";
 import { VendorOpen } from "./models/vendor.model";
 import { Soa } from "./models/soa.model";
-const bodyParser = require("body-parser");
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// <------------------------- ROUTES IMPORT  -------------------->
+import CompanyOpenRoute from "./routes/companyOpen.route";
+import vendorOpenRoute from "./routes/vendorOpen.route";
+import soaDetailsRoute from "./routes/soaDetails.route";
+
+// <------------------------- USER ROUTES IMPORT  -------------------->
+import userSignUpRoutes from "./routes/user/userSignUpRoutes";
+
+// const bodyParser = require("body-parser");
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+
+const PORT = process.env.PORT || 3000;
+// <---------------------- MIDDLEWARES -------------------->
+// alternative of bodyParse.
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
+
+// <------------------------- DATABASE CONNECT -------------------->
 try {
   mongoConnect();
 } catch (error) {
-  console.log(error);
+  console.log("DB CONNECT ERROR ", error);
 }
+
+// <------------------------- MULTER -------------------->
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// upload file type.
+// <------------------------- ROUTES -------------------->
+// upload.
+app.post("/upload", upload.single("file"), (req: Request, res: Response) => {
+  const workbook = xlsx.read(req?.file?.buffer, { type: "buffer" });
+  let sheetNameArr: any[] = [];
+  for (let i = 0; i < workbook?.SheetNames?.length; i++) {
+    if (workbook?.SheetNames[i] === "CNHi Open") {
+      const sheetName = workbook?.SheetNames[i];
+      const sheet = workbook?.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(sheet);
+      sheetNameArr.push({ sheetName, data });
+    }
+  }
+  return res.status(200).json({ data: sheetNameArr });
+});
+// dynamic upload file type.
 app.post("/upload/:fileType", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
@@ -69,6 +106,7 @@ app.post("/upload/:fileType", upload.single("file"), async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+    console.log("excelData", excelData);
     const fileData = new model({
       user: user._id,
       filename: originalname,
@@ -95,7 +133,6 @@ app.post("/upload/:fileType", upload.single("file"), async (req, res) => {
   }
 });
 
-
 // get file.
 app.get("/retrieve/:fileType", async (req: Request, res: Response) => {
   try {
@@ -106,18 +143,18 @@ app.get("/retrieve/:fileType", async (req: Request, res: Response) => {
       case "companyOpen":
         model = CompanyOpen;
         break;
-        case "vendorOpen":
-          model = VendorOpen;
-          break;
-        case "soa":
-          model = Soa;
-          break;
+      case "vendorOpen":
+        model = VendorOpen;
+        break;
+      case "soa":
+        model = Soa;
+        break;
       default:
         return res.status(400).json({ error: "Invalid fileType" });
     }
-    const data = await model.find(); 
-    if(!data){
-      return  res.status(404).json({msg:"not found!"})
+    const data = await model.find();
+    if (!data) {
+      return res.status(404).json({ msg: "not found!" });
     }
     return res.status(200).json(data);
   } catch (error) {
@@ -126,46 +163,18 @@ app.get("/retrieve/:fileType", async (req: Request, res: Response) => {
   }
 });
 
+// Specific Upload File
+// <------------------------- ROUTES MIDDLEWARE  -------------------->
+// Company Open
+app.use("/api", CompanyOpenRoute);
+
+// Vendor Open
+app.use("/api", vendorOpenRoute);
+
+// All Details SOA.
+app.use("/api", soaDetailsRoute);
+
 // Create User
-app.post("/createUser", async (req, res) => {
-  try {
-    const { username, email, fullname, password } = req.body;
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ error: "Username or email already exists" });
-    }
+app.use("/api/user", userSignUpRoutes);
 
-    // Create a new user
-    const newUser = new User({
-      username,
-      email,
-      fullname,
-      password,
-    });
-
-    await newUser.save();
-    return res.status(201).json({ message: "User created successfully" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// upload.
-app.post("/upload", upload.single("file"), (req: Request, res: Response) => {
-  const workbook = xlsx.read(req?.file?.buffer, { type: "buffer" });
-  let sheetNameArr: any[] = [];
-  for (let i = 0; i < workbook?.SheetNames?.length; i++) {
-    if (workbook?.SheetNames[i] === "CNHi Open") {
-      const sheetName = workbook?.SheetNames[i];
-      const sheet = workbook?.Sheets[sheetName];
-      const data = xlsx.utils.sheet_to_json(sheet);
-      sheetNameArr.push({ sheetName, data });
-    }
-  }
-  return res.status(200).json({ data: sheetNameArr });
-});
-
-app.listen(3000, () => console.log("running at 3000"));
+app.listen(PORT, () => console.log(`server running at ${PORT}`));
