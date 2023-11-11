@@ -27,6 +27,7 @@ export const companyOpenController = async (req: Request, res: Response) => {
           const normalizedKey = key
             .trim()
             .replace(/\s+/g, " ") // Replace consecutive spaces with a single space
+            .replace(/^\W+|\W+$/g, "") // Remove leading and trailing non-word characters
             .replace(/\W+/g, "_") // Replace special character with underscores
             .toLowerCase();
           transformedItem[normalizedKey] = item[key];
