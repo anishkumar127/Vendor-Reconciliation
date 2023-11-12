@@ -9,8 +9,8 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     if (!req?.file) {
       return res.status(400).json({ error: "Vendor File not provided" });
     }
-    const { originalname, buffer } = req?.file;
-    const { userId } = req?.body;
+    const { originalname, buffer } = req.file;
+    const { userId } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "User not provied!" });
@@ -24,7 +24,7 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     const excelData: any = sheetData?.map((item: any) => {
       const transformedItem: any = {};
       for (const key in item) {
-        if (item?.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(item, key)) {
           const normalizedKey = key
             .trim()
             .replace(/\s+/g, " ") // Replace consecutive spaces with a single space
@@ -80,7 +80,7 @@ export const vendorOpenGetAllController = async (
     res: Response
   ) => {
     try {
-      let model: any = VendorOpen;
+      const model: any = VendorOpen;
       const data = await model.find();
       if (!data) {
         return res.status(404).json({ error: "not found!" });
