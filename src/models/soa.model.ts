@@ -4,7 +4,7 @@ const soaSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     filename: { type: String, required: true },
-    data: [
+    data: 
         {
             invoice_number: { type: String, required: true },
             document_no: { type: String, required: true },
@@ -20,7 +20,7 @@ const soaSchema = new Schema(
             due_date: { type: String, required: true },
             cur: { type: String, required: true },
         }
-    ],
+    ,
   },
   { timestamps: true }
 );

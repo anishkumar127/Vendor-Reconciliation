@@ -4,7 +4,7 @@ export const companyOpenSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     filename: { type: String, required: false },
-    data: [
+    data: 
       {
         vendor: { type: String, required: true },
         vendor_name: { type: String, required: true },
@@ -16,7 +16,7 @@ export const companyOpenSchema = new Schema(
         closing_balance: { type: String, required: true },
         invoice_number: { type: String, required: true },
       }
-    ],
+    ,
   },
   { timestamps: true }
 );

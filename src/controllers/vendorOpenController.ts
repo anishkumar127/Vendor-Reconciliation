@@ -43,23 +43,29 @@ export const vendorOpenController = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
     console.log("excelData", excelData);
-    const fileData = new model({
-      user: user._id,
-      filename: originalname,
-      data: excelData,
-    } as any);
-
-    try {
-      console.log(fileData);
-      await fileData?.validate();
-    } catch (validationError: any) {
-      console.error(validationError);
-      res
-        .status(400)
-        .json({ error: "Validation Error", details: validationError.errors });
-      return;
+    for (let i = 0; i < excelData?.length; i++) {
+      try {
+        const fileData = await model.create({
+          user: user?._id,
+          filename: originalname,
+          data: excelData[i],
+        } as any);
+        try {
+          console.log(fileData);
+          await fileData?.validate();
+        } catch (validationError: any) {
+          console.error(validationError);
+          return res
+            .status(400)
+            .json({
+              error: "Validation Error",
+              details: validationError?.errors,
+            });
+        }
+      } catch (error: any) {
+        console.log(error?.message);
+      }
     }
-    await fileData.save();
     return res.status(201).json({ message: "File uploaded successfully" });
   } catch (error) {
     console.error(error);
