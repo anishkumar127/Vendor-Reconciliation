@@ -3,7 +3,7 @@ const vendorOpenSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     filename: { type: String, required: true },
-    data: [
+    data: 
       {
         business_partner: { type: String, required: true },
         business_partner_name: { type: String, required: true },
@@ -15,7 +15,7 @@ const vendorOpenSchema = new Schema(
         invoice_amount: { type: String, required: true },
         closing_balance: { type: String, required: true },
       }
-    ],
+    ,
   },
   { timestamps: true }
 );
