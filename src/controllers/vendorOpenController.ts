@@ -7,7 +7,7 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     console.log(req.file);
   try {
     if (!req?.file) {
-      return res.status(400).json({ error: "File not provided" });
+      return res.status(400).json({ error: "Vendor File not provided" });
     }
     const { originalname, buffer } = req?.file;
     const { userId } = req?.body;
@@ -17,8 +17,9 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     }
 
     const workbook = xlsx.read(buffer, { type: "buffer" });
-    const sheetName = workbook.SheetNames[21]; // in future it will be 0.
-    console.log(workbook.SheetNames[21]);
+    const sheetName = workbook.SheetNames[22]; // in future it will be 0.
+    console.log(workbook.SheetNames);
+    console.log(workbook.SheetNames[22]);
     const sheetData: any = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
     const excelData: any = sheetData?.map((item: any) => {
       const transformedItem: any = {};
@@ -27,6 +28,7 @@ export const vendorOpenController = async (req: Request, res: Response) => {
           const normalizedKey = key
             .trim()
             .replace(/\s+/g, " ") // Replace consecutive spaces with a single space
+            .replace(/^\W+|\W+$/g, "") // Remove leading and trailing non-word characters
             .replace(/\W+/g, "_") // Replace special character with underscores
             .toLowerCase();
           transformedItem[normalizedKey] = item[key];
