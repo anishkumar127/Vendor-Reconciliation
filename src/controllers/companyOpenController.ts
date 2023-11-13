@@ -20,6 +20,7 @@ export const companyOpenController = async (req: Request, res: Response) => {
     const sheetName = workbook.SheetNames[21]; // in future it will be 0.
     console.log(workbook.SheetNames[21]);
     const sheetData: any = xlsx.utils.sheet_to_json(workbook?.Sheets[sheetName]);
+    console.log(sheetData);
     const excelData: any = sheetData?.map((item: any) => {
       const transformedItem: any = {};
       for (const key in item) {
@@ -41,14 +42,16 @@ export const companyOpenController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    console.log("excelData", excelData);
+    // console.log("excelData", excelData);
 
+    // valid data.
     for (let i = 0; i < excelData?.length; i++) {
       try {
         const fileData = await model.create({
           user: user?._id,
           filename: originalname,
           data: excelData[i],
+          mixed_data:excelData[i]
         } as any);
         try {
           console.log(fileData);
@@ -66,6 +69,8 @@ export const companyOpenController = async (req: Request, res: Response) => {
         console.log(error?.message);
       }
     }
+
+
     return res.status(201).json({ message: "File uploaded successfully" });
   } catch (error) {
     console.error(error);

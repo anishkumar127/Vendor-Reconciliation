@@ -49,6 +49,7 @@ export const soaDetailsController = async (req: Request, res: Response) => {
           user: user?._id,
           filename: originalname,
           data: excelData[i],
+          mixed_data:excelData[i]
         } as any);
         try {
           console.log(fileData);

@@ -21,6 +21,7 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     console.log(workbook.SheetNames);
     console.log(workbook.SheetNames[22]);
     const sheetData: any = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    console.log(sheetData);
     const excelData: any = sheetData?.map((item: any) => {
       const transformedItem: any = {};
       for (const key in item) {
@@ -42,13 +43,14 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    console.log("excelData", excelData);
+    // console.log("excelData", excelData);
     for (let i = 0; i < excelData?.length; i++) {
       try {
         const fileData = await model.create({
           user: user?._id,
           filename: originalname,
           data: excelData[i],
+          mixed_data:excelData[i]
         } as any);
         try {
           console.log(fileData);

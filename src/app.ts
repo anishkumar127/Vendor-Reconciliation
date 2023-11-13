@@ -18,6 +18,10 @@ import soaDetailsRoute from "./routes/soaDetails.route";
 // <------------------------- USER ROUTES IMPORT  -------------------->
 import userSignUpRoutes from "./routes/user/userSignUpRoutes";
 
+// <------------------------- UNMATCHED ROUTES IMPORT  -------------------->
+
+import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
+
 // const bodyParser = require("body-parser");
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: true }));
@@ -176,5 +180,9 @@ app.use("/api", soaDetailsRoute);
 
 // Create User
 app.use("/api/user", userSignUpRoutes);
+
+// UNMATCHED
+
+app.use('/api',unmatchedDetectRoutes);
 
 app.listen(PORT, () => console.log(`server running at ${PORT}`));
