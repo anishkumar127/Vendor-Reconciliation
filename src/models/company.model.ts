@@ -7,10 +7,10 @@ export const companyOpenSchema = new Schema(
     data: {
       vendor: { type: String, required: true },
       vendor_name: { type: String, required: true },
-      document_no: { type: String, required: true },
-      doc_date: { type: String, required: true },
+      document_number: { type: String, required: true },
+      document_date: { type: String, required: true },
       due_date: { type: String, required: true },
-      cur: { type: String, required: true },
+      currency: { type: String, required: true },
       invoice_amount: { type: String, required: true },
       closing_balance: { type: String, required: true },
       invoice_number: { type: String, required: true },
