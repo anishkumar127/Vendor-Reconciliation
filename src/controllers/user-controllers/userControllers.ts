@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { User } from "../../models/user.model";
-import { v4 as uuidv4 } from "uuid";
 import { setUser } from "../../services/auth";
 
 export const userSignUpController = async (req: Request, res: Response) => {
