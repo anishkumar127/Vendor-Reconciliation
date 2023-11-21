@@ -44,9 +44,8 @@ export const userSignInController = async (req: Request, res: Response) => {
   if (!user) {
     return res.status(404).json({ error: "User not found!" });
   }
-  const sessionId = uuidv4();
-  setUser(sessionId, user);
-  res.cookie("uid", sessionId, { httpOnly: true });
+  const token = setUser(user);
+  res.cookie("uid", token, { httpOnly: true });
   console.log(res);
   return res.status(200).json({ response: user });
 };
