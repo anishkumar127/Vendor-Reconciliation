@@ -85,7 +85,7 @@ export const companyOpenGetAllController = async (
   res: Response
 ) => {
   try {
-    if(!(req as any ).user) return res.status(401).json({error:"user not logged in"});
+    // if(!(req as any ).user) return res.status(401).json({error:"user not logged in"}); // this was when using the cookie.
     const model: any = CompanyOpen;
     const data = await model.find({user:(req as any).user._id});
     if (!data) {

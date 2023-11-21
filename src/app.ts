@@ -26,6 +26,7 @@ import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
 
 // <------------------------- MAPPING ROUTES IMPORT [CONSTANTS] -------------------->
 import constantsRoute from './routes/constants-route/constantsRoute'
+import { checkForAuthentication } from "./middlewares/authMiddleware";
 // import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
 
 // const bodyParser = require("body-parser");
@@ -42,7 +43,9 @@ app.use(morgan("dev"));
 app.use(cors({
   origin:process.env.CORS_ORIGIN,
   credentials:true
-}))
+}));
+
+app.use(checkForAuthentication);
 // <------------------------- DATABASE CONNECT -------------------->
 try {
   mongoConnect();
