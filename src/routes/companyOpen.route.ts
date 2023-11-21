@@ -6,13 +6,13 @@ import {
 const router = express.Router();
 import upload from "../config/multerConfig";
 import { companyTESTControllrs } from "../controllers/companyTESTControllrs";
-import { restrictToLoggedInUserOnly } from "../middlewares/authMiddleware";
+import { checkAuth, restrictToLoggedInUserOnly } from "../middlewares/authMiddleware";
 router.post(
   "/upload/company-open",
   upload.single("file"),
   companyOpenController
 );
-router.get("/company-open-record", restrictToLoggedInUserOnly, companyOpenGetAllController);
+router.get("/company-open-record", checkAuth, companyOpenGetAllController);
 
 // testing
 

@@ -37,11 +37,16 @@ export const userSignUpController = async (req: Request, res: Response) => {
 
 export const userSignInController = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
-  const user = await User.findOne({ username, email, password });
-  if (!user) return res.status(404).json({ error: "User not found!" });
+  console.log(username, email, password);
+  const user = await User.findOne({ username, email, password }).select(
+    "-password"
+  );
+  if (!user) {
+    return res.status(404).json({ error: "User not found!" });
+  }
   const sessionId = uuidv4();
   setUser(sessionId, user);
-  res.cookie("uid", sessionId,{ httpOnly: true });
+  res.cookie("uid", sessionId, { httpOnly: true });
   console.log(res);
   return res.status(200).json({ response: user });
 };

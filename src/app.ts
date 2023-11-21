@@ -26,7 +26,7 @@ import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
 
 // <------------------------- MAPPING ROUTES IMPORT [CONSTANTS] -------------------->
 import constantsRoute from './routes/constants-route/constantsRoute'
-import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
+// import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
 
 // const bodyParser = require("body-parser");
 // app.use(bodyParser.json());
@@ -183,7 +183,7 @@ app.get("/retrieve/:fileType", async (req: Request, res: Response) => {
 app.use("/api", CompanyOpenRoute);
 
 // Vendor Open
-app.use("/api", vendorOpenRoute);
+app.use("/api",  vendorOpenRoute);
 
 // All Details SOA.
 app.use("/api", soaDetailsRoute);
