@@ -220,7 +220,7 @@ app.use('/api/master',masterRoutes);
 //   });
 
 
-const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
+const MONGO_URI: any = process.env.MONGO_URI;
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log("MongoDB connected successfully");
