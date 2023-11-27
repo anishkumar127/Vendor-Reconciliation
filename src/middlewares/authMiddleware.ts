@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { getUser } from "../services/auth";
-import { User } from "../models/user.model";
 
 export function checkForAuthentication(
   req: Request,

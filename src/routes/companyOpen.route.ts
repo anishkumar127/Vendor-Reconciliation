@@ -1,12 +1,12 @@
 import express from "express";
 import {
   companyOpenController,
-  companyOpenGetAllController,
+  // companyOpenGetAllController,
 } from "../controllers/companyOpenController";
 const router = express.Router();
 import upload from "../config/multerConfig";
 import { companyTESTControllrs } from "../controllers/companyTESTControllrs";
-import { restrictTo } from "../middlewares/authMiddleware";
+// import { restrictTo } from "../middlewares/authMiddleware";
 router.post(
   "/upload/company-open",
   upload.single("file"),
