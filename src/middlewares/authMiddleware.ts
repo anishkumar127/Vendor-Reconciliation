@@ -77,8 +77,8 @@ export const restrictTo =
     console.log(roles);
     const token = await req.cookies.access_token;
     const user: any = await getUser(token);
-
-    if (!roles.includes(user.role))
+    console.log(user);
+    if (!roles.includes(user?.role))
      return res.status(401).json({ error: "not authorized." });
 
     next();
