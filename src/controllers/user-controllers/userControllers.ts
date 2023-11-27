@@ -116,3 +116,11 @@ export const UserLogout = async (req: Request, res: Response) => {
   res.clearCookie("access_token");
   return res.status(200).json({ message: "Logout successful" });
 };
+
+
+
+// Get All User
+
+export const getAllUser = async (req: Request, res: Response) =>{
+  
+}
