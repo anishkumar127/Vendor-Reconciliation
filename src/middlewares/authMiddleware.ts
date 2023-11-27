@@ -6,11 +6,12 @@ export async function restrictToLoggedInUserOnly(
   res: Response,
   next: NextFunction
 ) {
-  const userUid = req.cookies.uid;
+  // const userUid = req.cookies.uid; // old way domain specific.
+  const userUid = req.headers["authorization"];
   console.log("UID", userUid);
   if (!userUid) return res.status(404).json({ error: "not found id!" });
-
-  const user = getUser(userUid);
+  const token = userUid?.split("Bearer ")[1];
+  const user = getUser(token);
   if (!user) return res.status(404).json({ error: "user not found!" });
 
   (req as any).user = user;
@@ -22,10 +23,12 @@ export async function checkAuth(
   res: Response,
   next: NextFunction
 ) {
-  const userUid = req.cookies.uid;
-  console.log("UID", userUid);
+  // const userUid = req.cookies.uid;
+  const userUid = req.headers["authorization"];
 
-  const user = getUser(userUid);
+  console.log("UID", userUid);
+  const token = userUid?.split("Bearer ")[1];
+  const user = getUser(token);
 
   (req as any).user = user;
   next();

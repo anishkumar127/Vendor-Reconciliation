@@ -12,7 +12,7 @@ router.post(
   upload.single("file"),
   companyOpenController
 );
-router.get("/company-open-record", checkAuth, companyOpenGetAllController);
+router.get("/company-open-record", checkAuth,restrictToLoggedInUserOnly, companyOpenGetAllController);
 
 // testing
 

@@ -44,7 +44,7 @@ export const userSignInController = async (req: Request, res: Response) => {
     return res.status(404).json({ error: "User not found!" });
   }
   const token = setUser(user);
-  res.cookie("uid", token, { httpOnly: true });
+  // res.cookie("uid", token, { httpOnly: true }); // domain specific.
   console.log(res);
-  return res.status(200).json({ response: user });
+  return res.status(200).json({ token: token });
 };
