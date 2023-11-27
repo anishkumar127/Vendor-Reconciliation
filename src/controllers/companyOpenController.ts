@@ -47,6 +47,8 @@ export const companyOpenController = async (req: Request, res: Response) => {
     // valid data.
     for (let i = 0; i < excelData?.length; i++) {
       try {
+        // console.log(excelData[i]);
+        // break;
         const fileData = await model.create({
           user: user?._id,
           filename: originalname,

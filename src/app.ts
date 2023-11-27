@@ -4,6 +4,7 @@ import multer from "multer";
 import xlsx from "xlsx";
 import morgan from "morgan";
 import { mongoConnect } from "./config/database";
+import cors from 'cors';
 
 // <------------------------- MODELS IMPORT  -------------------->
 import { User } from "./models/user.model";
@@ -22,6 +23,9 @@ import userSignUpRoutes from "./routes/user/userSignUpRoutes";
 
 import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
 
+// <------------------------- MAPPING ROUTES IMPORT [CONSTANTS] -------------------->
+import constantsRoute from './routes/constants-route/constantsRoute'
+
 // const bodyParser = require("body-parser");
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,7 +36,10 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-
+app.use(cors({
+  origin:process.env.CORS_ORIGIN,
+  credentials:true
+}))
 // <------------------------- DATABASE CONNECT -------------------->
 try {
   mongoConnect();
@@ -184,5 +191,8 @@ app.use("/api/user", userSignUpRoutes);
 // UNMATCHED
 
 app.use('/api',unmatchedDetectRoutes);
+
+// Constants
+app.use('/api',constantsRoute);
 
 app.listen(PORT, () => console.log(`server running at ${PORT}`));

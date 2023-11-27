@@ -16,7 +16,7 @@ export const unmatchedDetectController = async (
 
   const extractedMasterData = masterFileCompanyOpen?.map((item) => ({
     vendorName: item?.data?.vendor_name,
-    documentNo: item?.data?.document_no,
+    documentNo: item?.data?.document_number,
     invoiceNumber: item?.data?.invoice_number,
     closing_balance: item?.data?.closing_balance,
     completeInfo: item,
@@ -25,7 +25,7 @@ export const unmatchedDetectController = async (
 
   const extractedVendorData = vendorOpenData?.map((item: any) => ({
     vendorName: item?.data?.business_partner_name,
-    documentNo: item?.data?.document_no,
+    documentNo: item?.data?.ducument_number,
     invoiceNumber: item?.data?.invoice_number,
     closing_balance: item?.data?.closing_balance,
     completeInfo: item,
@@ -56,7 +56,7 @@ export const unmatchedDetectController = async (
   // -3066.67
   if (matchedInvoiceNumberWithDifference[0]?.amountDifference !== 0) {
     const fullDetailsFileData = fullDetailsFile?.map((item: any) => ({
-      documentNo: item?.data?.document_no,
+      documentNo: item?.data?.document_number,
       invoiceNumber: item?.data?.invoice_number,
       completeInfo: item,
     }));
