@@ -3,7 +3,7 @@ const app = express();
 import multer from "multer";
 import xlsx from "xlsx";
 import morgan from "morgan";
-import { mongoConnect } from "./config/database";
+// import { mongoConnect } from "./config/database";
 import cors from 'cors';
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
@@ -29,6 +29,7 @@ import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
 import constantsRoute from './routes/constants-route/constantsRoute'
 import { checkForAuthentication } from "./middlewares/authMiddleware";
 import masterRoutes from './routes/masterRoutes'
+import mongoose from "mongoose";
 // import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
 
 // const bodyParser = require("body-parser");
@@ -49,11 +50,7 @@ app.use(cors({
 
 app.use(checkForAuthentication);
 // <------------------------- DATABASE CONNECT -------------------->
-try {
-  mongoConnect();
-} catch (error) {
-  console.log("DB CONNECT ERROR ",error);
-}
+
 
 // <------------------------- MULTER -------------------->
 
@@ -205,4 +202,30 @@ app.use('/api',constantsRoute);
 
 app.use('/api/master',masterRoutes);
 
-app.listen(PORT, () => console.log(`server running at ${PORT}`));
+
+// try {
+//   mongoConnect();
+// } catch (error) {
+//   console.log("DB CONNECT ERROR ",error);
+// }
+// app.listen(PORT, () => console.log(`server running at ${PORT}`));
+
+
+// mongoConnect()
+//   .then(() => {
+//     app.listen(PORT, () => console.log(`Server running at ${PORT}`));
+//   })
+//   .catch((error) => {
+//     console.log("DB CONNECT ERROR", error);
+//   });
+
+
+const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log("MongoDB connected successfully");
+    app.listen(PORT, () => console.log(`Server running at ${PORT}`));
+  })
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
+  });

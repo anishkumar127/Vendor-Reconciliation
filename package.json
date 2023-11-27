@@ -45,9 +45,6 @@
     "uuid": "^9.0.0",
     "xlsx": "^0.18.5"
   },
-  "engines": {
-    "node": ">=12.0.0"
-  },
   "scriptsDescription": {
     "dev": "Run the development server with nodemon and ts-node",
     "start": "Build TypeScript and start the application",
