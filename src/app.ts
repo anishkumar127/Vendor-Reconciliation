@@ -6,7 +6,8 @@ import morgan from "morgan";
 import { mongoConnect } from "./config/database";
 import cors from 'cors';
 import cookieParser from 'cookie-parser'
-
+import dotenv from 'dotenv'
+dotenv.config();
 // <------------------------- MODELS IMPORT  -------------------->
 import { User } from "./models/user.model";
 import { CompanyOpen } from "./models/company.model";
