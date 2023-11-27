@@ -18,6 +18,10 @@ import soaDetailsRoute from "./routes/soaDetails.route";
 // <------------------------- USER ROUTES IMPORT  -------------------->
 import userSignUpRoutes from "./routes/user/userSignUpRoutes";
 
+// <------------------------- UNMATCHED ROUTES IMPORT  -------------------->
+
+import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
+
 // const bodyParser = require("body-parser");
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: true }));
@@ -45,7 +49,7 @@ const upload = multer({ storage: storage });
 // upload.
 app.post("/upload", upload.single("file"), (req: Request, res: Response) => {
   const workbook = xlsx.read(req?.file?.buffer, { type: "buffer" });
-  let sheetNameArr: any[] = [];
+  const sheetNameArr: any[] = [];
   for (let i = 0; i < workbook?.SheetNames?.length; i++) {
     if (workbook?.SheetNames[i] === "CNHi Open") {
       const sheetName = workbook?.SheetNames[i];
@@ -72,7 +76,7 @@ app.post("/upload/:fileType", upload.single("file"), async (req, res) => {
     const excelData: any = x.map((item: any) => {
       const transformedItem: any = {};
       for (const key in item) {
-        if (item.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(item, key)) {
           const normalizedKey = key
             .trim()
             .replace(/\s+/g, " ") // Replace consecutive spaces with a single space
@@ -176,5 +180,9 @@ app.use("/api", soaDetailsRoute);
 
 // Create User
 app.use("/api/user", userSignUpRoutes);
+
+// UNMATCHED
+
+app.use('/api',unmatchedDetectRoutes);
 
 app.listen(PORT, () => console.log(`server running at ${PORT}`));

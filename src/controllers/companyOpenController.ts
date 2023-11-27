@@ -9,8 +9,8 @@ export const companyOpenController = async (req: Request, res: Response) => {
     if (!req?.file) {
       return res.status(400).json({ error: "File not provided" });
     }
-    const { originalname, buffer } = req?.file;
-    const { userId } = req?.body;
+    const { originalname, buffer } = req.file;
+    const { userId } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "User not provied!" });
@@ -20,10 +20,11 @@ export const companyOpenController = async (req: Request, res: Response) => {
     const sheetName = workbook.SheetNames[21]; // in future it will be 0.
     console.log(workbook.SheetNames[21]);
     const sheetData: any = xlsx.utils.sheet_to_json(workbook?.Sheets[sheetName]);
+    console.log(sheetData);
     const excelData: any = sheetData?.map((item: any) => {
       const transformedItem: any = {};
       for (const key in item) {
-        if (item?.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(item, key)) {
           const normalizedKey = key
             .trim()
             .replace(/\s+/g, " ") // Replace consecutive spaces with a single space
@@ -41,14 +42,16 @@ export const companyOpenController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    console.log("excelData", excelData);
+    // console.log("excelData", excelData);
 
+    // valid data.
     for (let i = 0; i < excelData?.length; i++) {
       try {
         const fileData = await model.create({
           user: user?._id,
           filename: originalname,
           data: excelData[i],
+          mixed_data:excelData[i]
         } as any);
         try {
           console.log(fileData);
@@ -66,6 +69,8 @@ export const companyOpenController = async (req: Request, res: Response) => {
         console.log(error?.message);
       }
     }
+
+
     return res.status(201).json({ message: "File uploaded successfully" });
   } catch (error) {
     console.error(error);
@@ -78,7 +83,7 @@ export const companyOpenGetAllController = async (
   res: Response
 ) => {
   try {
-    let model: any = CompanyOpen;
+    const model: any = CompanyOpen;
     const data = await model.find();
     if (!data) {
       return res.status(404).json({ error: "not found!" });

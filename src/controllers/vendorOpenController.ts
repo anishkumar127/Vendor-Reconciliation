@@ -9,8 +9,8 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     if (!req?.file) {
       return res.status(400).json({ error: "Vendor File not provided" });
     }
-    const { originalname, buffer } = req?.file;
-    const { userId } = req?.body;
+    const { originalname, buffer } = req.file;
+    const { userId } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "User not provied!" });
@@ -21,10 +21,11 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     console.log(workbook.SheetNames);
     console.log(workbook.SheetNames[22]);
     const sheetData: any = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    console.log(sheetData);
     const excelData: any = sheetData?.map((item: any) => {
       const transformedItem: any = {};
       for (const key in item) {
-        if (item?.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(item, key)) {
           const normalizedKey = key
             .trim()
             .replace(/\s+/g, " ") // Replace consecutive spaces with a single space
@@ -42,13 +43,14 @@ export const vendorOpenController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    console.log("excelData", excelData);
+    // console.log("excelData", excelData);
     for (let i = 0; i < excelData?.length; i++) {
       try {
         const fileData = await model.create({
           user: user?._id,
           filename: originalname,
           data: excelData[i],
+          mixed_data:excelData[i]
         } as any);
         try {
           console.log(fileData);
@@ -80,7 +82,7 @@ export const vendorOpenGetAllController = async (
     res: Response
   ) => {
     try {
-      let model: any = VendorOpen;
+      const model: any = VendorOpen;
       const data = await model.find();
       if (!data) {
         return res.status(404).json({ error: "not found!" });
