@@ -27,6 +27,7 @@ import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
 // <------------------------- MAPPING ROUTES IMPORT [CONSTANTS] -------------------->
 import constantsRoute from './routes/constants-route/constantsRoute'
 import { checkForAuthentication } from "./middlewares/authMiddleware";
+import masterRoutes from './routes/masterRoutes'
 // import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
 
 // const bodyParser = require("body-parser");
@@ -200,5 +201,7 @@ app.use('/api',unmatchedDetectRoutes);
 
 // Constants
 app.use('/api',constantsRoute);
+
+app.use('/api/master',masterRoutes);
 
 app.listen(PORT, () => console.log(`server running at ${PORT}`));

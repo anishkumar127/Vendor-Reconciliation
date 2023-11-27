@@ -1,10 +1,18 @@
 import express from "express";
-import { userSignInController, userSignUpController } from "../../controllers/user-controllers/userControllers";
+import {
+  userSignInController,
+  userSignUpController,
+  UserLogout,
+} from "../../controllers/user-controllers/userControllers";
+import { restrictTo } from "../../middlewares/authMiddleware";
 const router = express.Router();
 
 // SignUp
-router.post("/signup", userSignUpController);
+router.post("/signup", restrictTo(["MASTER","ADMIN"]), userSignUpController);
 
 // SignIn
-router.post("/login",userSignInController);
+router.post("/login", userSignInController);
+
+// Logout
+router.route("/logout").get(UserLogout);
 export default router;
