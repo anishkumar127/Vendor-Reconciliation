@@ -3,7 +3,7 @@ const app = express();
 import multer from "multer";
 import xlsx from "xlsx";
 import morgan from "morgan";
-import { mongoConnect } from "./config/database";
+// import { mongoConnect } from "./config/database";
 import cors from 'cors';
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
