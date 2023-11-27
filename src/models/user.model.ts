@@ -16,13 +16,23 @@ const userSchema = new Schema(
       unqiue: true,
       lowecase: true,
       trim: true,
-      index:true
+      index: true,
     },
     fullname: {
       type: String,
       required: true,
       trim: true,
       index: true,
+    },
+    role: {
+      type: [
+        {
+          type: String,
+          enum: ["USER", "ADMIN", "MASTER", "GUEST"],
+        },
+      ],
+      required: true,
+      default: "USER",
     },
     avatar: {
       type: String, // cloudinary url.
