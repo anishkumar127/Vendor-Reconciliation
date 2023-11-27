@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { getUser } from "../services/auth";
+import { User } from "../models/user.model";
 
 export function checkForAuthentication(
   req: Request,
@@ -22,19 +23,20 @@ export function checkForAuthentication(
   next();
 }
 
-export function restrictTo(roles: string[] = []) {
-  return function (req: Request, res: Response, next: NextFunction) {
-    if (!(req as any).user)
-      return res.status(404).json({ error: "no user found!" });
-    // console.log("R", roles);
-    // console.log((req as any).user.role);
-    // !roles.includes((req as any).user.role
-    if (!(req as any).user.role.some((userRole:string) => roles.includes(userRole)))
-      return res.status(401).json({ error: "UnAuthorized" });
+// export function restrictTo(roles: string[] = []) {
+//   return function (req: Request, res: Response, next: NextFunction) {
+//     if (!(req as any).user)
+//       return res.status(404).json({ error: "no user found!" });
+//     // console.log("R", roles);
+//     // console.log((req as any).user.role);
+//     // !roles.includes((req as any).user.role
+//     console.log(req);
+//     if (!(req as any).user.role.some((userRole:string) => roles.includes(userRole)))
+//       return res.status(401).json({ error: "UnAuthorized" });
 
-    next();
-  };
-}
+//     next();
+//   };
+// }
 
 // export async function restrictToLoggedInUserOnly(
 //   req: Request,
@@ -68,3 +70,20 @@ export function restrictTo(roles: string[] = []) {
 //   (req as any).user = user;
 //   next();
 // }
+
+// test
+
+export const restrictTo =
+  (roles: any[]) => async (req: Request, res: Response, next: NextFunction) => {
+    console.log(roles);
+    const token = await req.cookies.access_token;
+    const user: any = await getUser(token);
+
+    if (!roles.includes(user.role))
+     return res.status(401).json({ error: "not authorized." });
+
+    next();
+  };
+
+
+  

@@ -1,11 +1,13 @@
 import jwt from "jsonwebtoken";
-const secret: any = process.env.JWT_SECRET_KEY;
+import dotenv from "dotenv";
+dotenv.config();
+const secret: any = process.env.ACCESS_TOKEN_SECRET;
 export function setUser(user: any) {
   try {
     const payload = {
       _id: user._id,
       email: user.email,
-      role:user.role
+      role: user.role,
     };
     return jwt.sign(payload, secret);
   } catch (error) {

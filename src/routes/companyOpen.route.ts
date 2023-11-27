@@ -12,11 +12,11 @@ router.post(
   upload.single("file"),
   companyOpenController
 );
-router.get(
-  "/company-open-record",
-  restrictTo(["ADMIN"]),
-  companyOpenGetAllController
-);
+// router.get(
+//   "/company-open-record",
+//   restrictTo(["ADMIN"]),
+//   companyOpenGetAllController
+// );
 
 // testing
 
