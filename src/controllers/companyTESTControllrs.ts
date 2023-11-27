@@ -1,61 +1,170 @@
 import { Request, Response } from "express";
 import { CompanyOpen } from "../models/company.model";
 import { masterCompanyConstants } from "../constants/Constants";
+// export const companyTESTControllrs = async (req: Request, res: Response) => {
+//   try {
+//     const model: any = CompanyOpen;
+//     const {
+//       selectedFieldAssociations: receivedData,
+//       user,
+//       originalFileName,
+//     } = req.body;
+
+//     const isMissingOrEmpty = masterCompanyConstants.some((key) => {
+//       return !(key in receivedData) || !receivedData[key]?.label?.trim();
+//     });
+
+//     if (isMissingOrEmpty) {
+//       return res.status(404).json({ error: "Please select all fields" });
+//     }
+
+//     // make manditory field data.
+//     const manditoryFeild: any = [];
+//     masterCompanyConstants?.some((key) => {
+//       if (key in receivedData && receivedData[key]?.label?.trim()) {
+//         const obj: any = {};
+//         obj[key] = receivedData[key].data;
+//         manditoryFeild.push(obj);
+//       }
+//     });
+//     // make not maditory field data.
+//     const notManditoryFeild: any[] = [];
+//     Object.keys(receivedData)?.forEach((key) => {
+//       const isKeyNotPresent = masterCompanyConstants.includes(key);
+//       console.log(key, isKeyNotPresent);
+//       if (!isKeyNotPresent) {
+//         const obj: any = {};
+//         obj[key] = receivedData[key];
+//         notManditoryFeild.push(obj);
+//       }
+//     });
+//     const combinedData: any = [...manditoryFeild, ...notManditoryFeild]?.reduce(
+//       (acc, obj) => {
+//         return { ...acc, ...obj };
+//       },
+//       {}
+//     );
+//     const keysData = Object.keys(combinedData);
+
+//     const maxDataLength: any = Object.values(combinedData).reduce(
+//       (max: any, arr: any) => (arr.length > max ? arr.length : max),
+//       0
+//     );
+
+//     for (let i = 0; i < maxDataLength; i++) {
+//       const dataObj: { [key: string]: string | number | null } = {};
+
+//       keysData.forEach((key) => {
+//         const valueAtIndex = combinedData[key]?.[i];
+//         if (valueAtIndex !== undefined) {
+//           dataObj[key] = valueAtIndex;
+//         }
+//       });
+//       try {
+//         await model.create({
+//           user: user,
+//           filename: originalFileName,
+//           data: dataObj,
+//           mixed_data: dataObj,
+//         });
+//       } catch (error) {
+//         console.log("Model error:", error);
+//       }
+//     }
+//     return res.json({ success: "Uploaded Successfully!" });
+//   } catch (error) {
+//     console.log(error);
+//     return res.json(400).json({ error });
+//   }
+// };
+
+
+interface ReceivedData {
+  [key: string]: {
+    label: string;
+    data: (string | number | null)[];
+  };
+}
+
 export const companyTESTControllrs = async (req: Request, res: Response) => {
   try {
-    const model: any = CompanyOpen;
+    const model: typeof CompanyOpen = CompanyOpen;
     const {
       selectedFieldAssociations: receivedData,
       user,
       originalFileName,
+    }: {
+      selectedFieldAssociations: ReceivedData;
+      user: string;
+      originalFileName: string;
     } = req.body;
-    const allFieldsSelected = Object.values(receivedData)?.length<masterCompanyConstants?.length;
-    if(allFieldsSelected){
-        return res.status(404).json({error:'Please select all fields'})
+
+    // Check for missing or empty fields
+    const isMissingOrEmpty = masterCompanyConstants?.some((key) => {
+      return !(key in receivedData) || !receivedData[key]?.label?.trim();
+    });
+
+    if (isMissingOrEmpty) {
+      return res.status(400).json({ error: "Please select all fields" });
     }
-    const result = masterCompanyConstants?.map((item) => {
-      const isKeyExist = Object.keys(receivedData)?.some((key) => key === item);
-      if (isKeyExist) {
-        return { [item]: receivedData[item]?.data };
+
+    // Extract mandatory and non-mandatory fields
+    const mandatoryFields: any[] = [];
+    const nonMandatoryFields: any[] = [];
+
+    Object.keys(receivedData)?.forEach((key) => {
+      if (masterCompanyConstants?.includes(key) && receivedData[key]?.label?.trim()) {
+        const obj: any = {};
+        obj[key] = receivedData[key].data;
+        mandatoryFields.push(obj);
       } else {
-        return { [item]: null };
+        const obj: any = {};
+        obj[key] = receivedData[key];
+        nonMandatoryFields.push(obj);
       }
     });
 
-    const numberOfRows =
-      result && result.length > 0
-        ? result[0][Object.keys(result[0])[0]].length
-        : 0;
+    // Combine mandatory and non-mandatory fields
+    const combinedData: any = [...mandatoryFields, ...nonMandatoryFields]?.reduce(
+      (acc, obj) => {
+        return { ...acc, ...obj };
+      },
+      {}
+    );
 
-    for (let i = 0; i < numberOfRows; i++) {
-      const dataObj: any = {};
-      result?.forEach((fieldData) => {
-        const fieldName = Object.keys(fieldData)[0];
-        const fieldValue = fieldData[fieldName][i];
-        dataObj[fieldName] = fieldValue;
-      });
+    const keysData = Object.keys(combinedData);
 
-      console.log("dataObj", dataObj);
+    // Find max data length
+    const maxDataLength: number = Object.values(combinedData)?.reduce(
+      (max: number, arr: any) => (arr.length > max ? arr.length : max),
+      0
+    );
 
-      const mixedData: any = {};
-         Object.keys(receivedData)?.forEach((key) => {
-        console.log(receivedData[key]);
-        const dataForKey = receivedData[key]?.data;
-        if (dataForKey && i < dataForKey.length) {
-          mixedData[receivedData[key]?.label] = dataForKey[i];
+    for (let i = 0; i < maxDataLength; i++) {
+      const dataObj: { [key: string]: string | number | null } = {};
+
+      keysData?.forEach((key) => {
+        const valueAtIndex = combinedData[key]?.[i];
+        if (valueAtIndex !== undefined) {
+          dataObj[key] = valueAtIndex;
         }
       });
-    
-      await model.create({
-        user: user,
-        filename: originalFileName,
-        data: dataObj,
-        mixed_data: mixedData,
-      } as any);
+
+      try {
+        await model.create({
+          user: user,
+          filename: originalFileName,
+          data: dataObj,
+          mixed_data: dataObj,
+        });
+      } catch (error) {
+        console.log("Model error:", error);
+      }
     }
+
     return res.json({ success: "Uploaded Successfully!" });
   } catch (error) {
     console.log(error);
-    return res.json(400).json({ error });
+    return res.status(400).json({ error: "Bad Request" });
   }
 };

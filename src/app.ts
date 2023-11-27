@@ -5,6 +5,7 @@ import xlsx from "xlsx";
 import morgan from "morgan";
 import { mongoConnect } from "./config/database";
 import cors from 'cors';
+import cookieParser from 'cookie-parser'
 
 // <------------------------- MODELS IMPORT  -------------------->
 import { User } from "./models/user.model";
@@ -17,7 +18,7 @@ import vendorOpenRoute from "./routes/vendorOpen.route";
 import soaDetailsRoute from "./routes/soaDetails.route";
 
 // <------------------------- USER ROUTES IMPORT  -------------------->
-import userSignUpRoutes from "./routes/user/userSignUpRoutes";
+import userSignUpRoutes from "./routes/user/userRoutes";
 
 // <------------------------- UNMATCHED ROUTES IMPORT  -------------------->
 
@@ -25,6 +26,7 @@ import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
 
 // <------------------------- MAPPING ROUTES IMPORT [CONSTANTS] -------------------->
 import constantsRoute from './routes/constants-route/constantsRoute'
+// import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
 
 // const bodyParser = require("body-parser");
 // app.use(bodyParser.json());
@@ -35,6 +37,7 @@ const PORT = process.env.PORT || 3000;
 // alternative of bodyParse.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(cors({
   origin:process.env.CORS_ORIGIN,
@@ -180,7 +183,7 @@ app.get("/retrieve/:fileType", async (req: Request, res: Response) => {
 app.use("/api", CompanyOpenRoute);
 
 // Vendor Open
-app.use("/api", vendorOpenRoute);
+app.use("/api",  vendorOpenRoute);
 
 // All Details SOA.
 app.use("/api", soaDetailsRoute);

@@ -1,4 +1,4 @@
 #!/bin/sh
 npm run lint
 
-# chmod +x .husky/pre-commit
+chmod +x .husky/pre-commit
