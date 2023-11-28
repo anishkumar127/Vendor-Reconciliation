@@ -44,7 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(cors({
-  origin:process.env.CORS_ORIGIN,
+  origin:"http://localhost:5173",
   credentials:true
 }));
 
