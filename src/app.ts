@@ -48,7 +48,7 @@ app.use(cors({
   credentials:true
 }));
 
-app.use(checkForAuthentication);
+// app.use(checkForAuthentication);
 // <------------------------- DATABASE CONNECT -------------------->
 
 
