@@ -88,7 +88,8 @@ export const userSignInController = async (req: Request, res: Response) => {
     res.cookie("access_token", token, {
       httpOnly: true,
       expires: token_expire,
-      path: '/',
+      // path: '/',
+      sameSite: 'none',
     });
   
     return res.status(200).json({ token: token });
