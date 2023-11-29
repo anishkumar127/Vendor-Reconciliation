@@ -105,7 +105,7 @@ export const userSignInController = async (req: Request, res: Response) => {
     //   secure:true
     // });
   
-    return res.status(200).json({ token: token });
+    return res.status(200).json({role:"MASTER", token: token });
   }else{
     const user = await User.findOne({ email });
     if (!user) {
@@ -120,8 +120,8 @@ export const userSignInController = async (req: Request, res: Response) => {
     //   httpOnly: true,
     //   expires: token_expire,
     // });
-  
-    return res.status(200).json({ token: token });
+    console.log(token);
+    return res.status(200).json({role:user?.role,fullName:user?.fullName,email:user?.email,username:user?.username, token: token });
   }
 
 };
