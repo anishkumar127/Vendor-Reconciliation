@@ -90,6 +90,7 @@ export const userSignInController = async (req: Request, res: Response) => {
       expires: token_expire,
       // path: '/',
       sameSite: 'none',
+      secure:true
     });
   
     return res.status(200).json({ token: token });
