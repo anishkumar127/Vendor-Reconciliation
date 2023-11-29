@@ -17,7 +17,19 @@ export const userSignUpController = async (req: Request, res: Response) => {
         .json({ error: "Username or email already exists" });
     }
 
-    const token: string = await req.cookies.access_token;
+    const authorizationHeaderValue = req.headers["authorization"];
+    if (
+      !authorizationHeaderValue ||
+      !authorizationHeaderValue?.startsWith("Bearer")
+    )
+     return res.status(401).json({error:"token not provided!"})
+
+
+    const token = authorizationHeaderValue?.split("Bearer ")[1];
+    if(!token){
+      return res.status(401).json({error:"token not provided!"})
+    }
+    
     const role: string = await getMyRole(token);
     const { _id: ID }: any = await getUser(token);
     // Create a new user
@@ -84,14 +96,14 @@ export const userSignInController = async (req: Request, res: Response) => {
     // if (!isMatched) return res.status(400).json({ error: "password is Wrong!" });
   
     const token = setUser(user);
-    const token_expire = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      expires: token_expire,
-      // path: '/',
-      sameSite: 'none',
-      secure:true
-    });
+    // const token_expire = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // res.cookie("access_token", token, {
+    //   httpOnly: true,
+    //   expires: token_expire,
+    //   // path: '/',
+    //   sameSite: 'none',
+    //   secure:true
+    // });
   
     return res.status(200).json({ token: token });
   }else{
@@ -103,11 +115,11 @@ export const userSignInController = async (req: Request, res: Response) => {
     if (!isMatched) return res.status(400).json({ error: "password is Wrong!" });
   
     const token = setUser(user);
-    const token_expire = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      expires: token_expire,
-    });
+    // const token_expire = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // res.cookie("access_token", token, {
+    //   httpOnly: true,
+    //   expires: token_expire,
+    // });
   
     return res.status(200).json({ token: token });
   }

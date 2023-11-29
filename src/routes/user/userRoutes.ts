@@ -11,7 +11,7 @@ const router = express.Router();
 router.post("/signup", restrictTo(["MASTER","ADMIN"]), userSignUpController);
 
 // SignIn
-router.post("/login", userSignInController);
+router.post("/login",restrictTo(["MASTER","ADMIN","USER"]), userSignInController);
 
 // Logout
 router.route("/logout").get(UserLogout);
