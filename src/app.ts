@@ -27,7 +27,7 @@ import unmatchedDetectRoutes from './routes/unmatched/unmatchedDetectRoutes'
 
 // <------------------------- MAPPING ROUTES IMPORT [CONSTANTS] -------------------->
 import constantsRoute from './routes/constants-route/constantsRoute'
-import { checkForAuthentication } from "./middlewares/authMiddleware";
+// import { checkForAuthentication } from "./middlewares/authMiddleware";
 import masterRoutes from './routes/masterRoutes'
 import mongoose from "mongoose";
 // import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
