@@ -3,6 +3,7 @@ import {
   userSignInController,
   userSignUpController,
   UserLogout,
+  getAllUser,
 } from "../../controllers/user-controllers/userControllers";
 import { restrictTo } from "../../middlewares/authMiddleware";
 const router = express.Router();
@@ -15,4 +16,8 @@ router.post("/login",restrictTo(["MASTER","ADMIN","USER"]), userSignInController
 
 // Logout
 router.route("/logout").get(UserLogout);
+
+// get all users
+
+router.route("/getAllUser").get(getAllUser);
 export default router;
