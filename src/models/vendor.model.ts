@@ -20,4 +20,4 @@ const vendorOpenSchema = new Schema(
   },
   { timestamps: true }
 );
-export const VendorOpen = mongoose.model("VendorOpen", vendorOpenSchema);
+export const VendorOpenOLD = mongoose.model("VendorOpen", vendorOpenSchema);
