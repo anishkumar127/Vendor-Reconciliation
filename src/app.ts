@@ -1,7 +1,7 @@
-import express, { Request, Response } from "express";
+import express from "express";
 const app = express();
-import multer from "multer";
-import xlsx from "xlsx";
+// import multer from "multer";
+// import xlsx from "xlsx";
 import morgan from "morgan";
 // import { mongoConnect } from "./config/database";
 import cors from "cors";
