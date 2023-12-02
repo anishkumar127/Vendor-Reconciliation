@@ -3,6 +3,7 @@ import { RequestHandler } from "express";
 // import { User } from "../models/user.model";
 import { getUser } from "../services/auth";
 import { VendorOpen } from "../models/mixed/vendor.modal";
+import { v4 as uuidv4 } from "uuid";
 
 // export const vendorOpenController = async (req: Request, res: Response) => {
 //     console.log(req.file);
@@ -122,11 +123,16 @@ export const vendorOpenController: RequestHandler = async (req, res) => {
     return res.status(400).json({ error: `missing required fields.}` });
   }
   try {
-    await VendorOpen.create({
-      user,
-      fileName,
-      data,
-    });
+    const uniqueId = uuidv4();
+    console.log("uniqueId", uniqueId);
+    for (let i = 0; i < data?.length; i++) {
+      await VendorOpen.create({
+        user,
+        fileName,
+        uniqueId,
+        data: data[i],
+      });
+    }
   } catch (error) {
     return res.status(500).json({ error: error });
   }
