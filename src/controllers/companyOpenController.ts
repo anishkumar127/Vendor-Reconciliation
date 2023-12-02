@@ -15,7 +15,7 @@ export const companyOpenController = async (req: Request, res: Response) => {
     const { userId } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ error: "User not provied!" });
+      return res.status(400).json({ error: "User not provided!" });
     }
 
     const workbook = xlsx.read(buffer, { type: "buffer" });
@@ -147,11 +147,11 @@ export const getAllMasterOpenDataController: RequestHandler = async (
 
   const { _id }: any = await getUser(token);
   if (!_id) return res.status(401).json({ error: "user not authenticated!" });
-console.log(_id)
+  console.log(_id);
   try {
-    const userAllData = await MasterOpen.find({ user:_id });
-    if (!userAllData) return res.status(404).json({ error:"not data found!" });
-    return res.status(200).json({data:userAllData})
+    const userAllData = await MasterOpen.find({ user: _id });
+    if (!userAllData) return res.status(404).json({ error: "not data found!" });
+    return res.status(200).json({ data: userAllData });
   } catch (error) {
     return res.status(500).json({ error: error });
   }

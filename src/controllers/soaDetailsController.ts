@@ -15,7 +15,7 @@ export const soaDetailsController = async (req: Request, res: Response) => {
     const { userId } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ error: "User not provied!" });
+      return res.status(400).json({ error: "User not provided!" });
     }
 
     const workbook = xlsx.read(buffer, { type: "buffer" });
