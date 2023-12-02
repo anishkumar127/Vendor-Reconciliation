@@ -4,6 +4,7 @@ import { Soa } from "../models/soa.model";
 import { User } from "../models/user.model";
 import { getUser } from "../services/auth";
 import { CompleteDetails } from "../models/mixed/complete-details.model";
+import { v4 as uuidv4 } from "uuid";
 
 export const soaDetailsController = async (req: Request, res: Response) => {
   console.log(req.file);
@@ -120,11 +121,16 @@ export const completeDetailsController: RequestHandler = async (req, res) => {
     return res.status(400).json({ error: `missing required fields.}` });
   }
   try {
-    await CompleteDetails.create({
-      user,
-      fileName,
-      data,
-    });
+    const uniqueId = uuidv4();
+    console.log("uniqueId", uniqueId);
+    for (let i = 0; i < data?.length; i++) {
+      await CompleteDetails.create({
+        user,
+        fileName,
+        uniqueId,
+        data: data[i],
+      });
+    }
   } catch (error) {
     return res.status(500).json({ error: error });
   }

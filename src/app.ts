@@ -33,8 +33,8 @@ import mongoose from "mongoose";
 // import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
 
 import bodyParser from "body-parser";
-app.use(bodyParser.json({limit:'10mb'}));
-app.use(bodyParser.urlencoded({ limit: '10mb',extended: true }));
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
 const PORT = process.env.PORT || 3000;
 // <---------------------- MIDDLEWARES -------------------->
@@ -216,7 +216,10 @@ app.use("/api/master", masterRoutes);
 //     console.log("DB CONNECT ERROR", error);
 //   });
 
-const MONGO_URI: any = process.env.MONGO_URI;
+const MONGO_URI: any =
+  process.env.NODE_ENV === "development"
+    ? process.env.MONGO_LOCAL_URI
+    : process.env.MONGO_URI;
 mongoose
   .connect(MONGO_URI)
   .then(() => {
