@@ -1,7 +1,7 @@
-import express, { Request, Response } from "express";
+import express from "express";
 const app = express();
-import multer from "multer";
-import xlsx from "xlsx";
+// import multer from "multer";
+// import xlsx from "xlsx";
 import morgan from "morgan";
 // import { mongoConnect } from "./config/database";
 import cors from "cors";
@@ -32,15 +32,15 @@ import masterRoutes from "./routes/masterRoutes";
 import mongoose from "mongoose";
 // import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
 
-// const bodyParser = require("body-parser");
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: true }));
+import bodyParser from "body-parser";
+app.use(bodyParser.json({limit:'10mb'}));
+app.use(bodyParser.urlencoded({ limit: '10mb',extended: true }));
 
 const PORT = process.env.PORT || 3000;
 // <---------------------- MIDDLEWARES -------------------->
 // alternative of bodyParse.
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 // app.use(cors({
