@@ -123,14 +123,23 @@ export const completeDetailsController: RequestHandler = async (req, res) => {
   try {
     const uniqueId = uuidv4();
     console.log("uniqueId", uniqueId);
-    for (let i = 0; i < data?.length; i++) {
-      await CompleteDetails.create({
-        user,
-        fileName,
-        uniqueId,
-        data: data[i],
-      });
-    }
+    // batch calls
+    // for (let i = 0; i < data?.length; i++) {
+    //   await CompleteDetails.create({
+    //     user,
+    //     fileName,
+    //     uniqueId,
+    //     data: data[i],
+    //   });
+    // }
+    const documents = data.map((item: any) => ({
+      user,
+      fileName,
+      uniqueId,
+      data: item,
+    }));
+
+    await CompleteDetails.insertMany(documents);
   } catch (error) {
     return res.status(500).json({ error: error });
   }
