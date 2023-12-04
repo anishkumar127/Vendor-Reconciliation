@@ -5,6 +5,7 @@ import { User } from "../models/user.model";
 import { getUser } from "../services/auth";
 import { CompleteDetails } from "../models/mixed/complete-details.model";
 import { v4 as uuidv4 } from "uuid";
+import { RecentIds } from "../models/mixed/RecentIds.model";
 
 export const soaDetailsController = async (req: Request, res: Response) => {
   console.log(req.file);
@@ -120,26 +121,48 @@ export const completeDetailsController: RequestHandler = async (req, res) => {
   if (!user || !fileName || !data) {
     return res.status(400).json({ error: `missing required fields.}` });
   }
+  const { _id: userId }: any = await getUser(token);
+
   try {
     const uniqueId = uuidv4();
     console.log("uniqueId", uniqueId);
-    // batch calls
-    // for (let i = 0; i < data?.length; i++) {
-    //   await CompleteDetails.create({
-    //     user,
-    //     fileName,
-    //     uniqueId,
-    //     data: data[i],
-    //   });
-    // }
-    const documents = data.map((item: any) => ({
+    // const documents = data.map((item: any) => ({
+    //   user,
+    //   fileName,
+    //   uniqueId,
+    //   data: item,
+    // }));
+
+    // await CompleteDetails.insertMany(documents);
+    const obj: any = {};
+
+    data.forEach((item: any) => {
+      obj[item["Invoice Number"]] = item;
+    });
+    const createdDetails = await CompleteDetails.create({
       user,
       fileName,
       uniqueId,
-      data: item,
-    }));
+      data: obj,
+    });
+    const ID = createdDetails._id;
+    const options = { new: true, upsert: true };
+    const recentUpdatedDetailsId = await RecentIds.findOneAndUpdate(
+      { masterId: { $exists: true } }, // Update documents where masterId field exists
+      {
+        $set: {
+          user: userId,
+          detailsId: ID,
+        },
+      },
+      options
+    );
 
-    await CompleteDetails.insertMany(documents);
+    console.log({ recentUpdatedDetailsId });
+    return res.status(201).json({
+      detailsId: recentUpdatedDetailsId,
+      RecentCreatedDetailsData: createdDetails,
+    });
   } catch (error) {
     return res.status(500).json({ error: error });
   }
@@ -159,7 +182,11 @@ export const getAllCompleteDetailsDataController: RequestHandler = async (
   if (!_id) return res.status(401).json({ error: "user not authenticated!" });
   console.log(_id);
   try {
-    const userAllData = await CompleteDetails.find({ user: _id });
+    const userAllData = await CompleteDetails.find({ user: _id })
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
     if (!userAllData) return res.status(404).json({ error: "not data found!" });
     return res.status(200).json({ data: userAllData });
   } catch (error) {

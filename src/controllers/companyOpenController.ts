@@ -5,6 +5,7 @@ import { User } from "../models/user.model";
 import { MasterOpen } from "../models/Master.model";
 import { getUser } from "../services/auth";
 import { v4 as uuidv4 } from "uuid";
+import { RecentIds } from "../models/mixed/RecentIds.model";
 
 export const companyOpenController = async (req: Request, res: Response) => {
   console.log(req.file);
@@ -125,6 +126,8 @@ export const masterOpenController: RequestHandler = async (req, res) => {
   if (!user || !fileName || !data) {
     return res.status(400).json({ error: `missing required fields.}` });
   }
+
+  const { _id: userId }: any = await getUser(token);
   try {
     const uniqueId = uuidv4();
     console.log("uniqueId", uniqueId);
@@ -136,14 +139,55 @@ export const masterOpenController: RequestHandler = async (req, res) => {
     //     data: data[i],
     //   });
     // }
-    const documents = data.map((item: any) => ({
+    // const documents = data.map((item: any) => ({
+    //   user,
+    //   fileName,
+    //   uniqueId,
+    //   data: item,
+    // }));
+
+    // await MasterOpen.insertMany(documents);
+    const obj: any = {};
+
+    data.forEach((item: any) => {
+      obj[item["Invoice Number"]] = item;
+    });
+    const createdMaster = await MasterOpen.create({
       user,
       fileName,
       uniqueId,
-      data: item,
-    }));
+      data: obj,
+    });
+    const ID = createdMaster._id;
+    const options = { new: true, upsert: true };
+    // const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
+    //   { masterId: { $exists: true } }, // Update documents where masterId field exists
+    //   {
+    //     $set: {
+    //       user: userId,
+    //       masterId: ID,
+    //     },
+    //   },
+    //   options
+    // );
+    const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
+      { masterId: { $exists: true } },
+      {
+        $set: {
+          masterId: ID,
+        },
+        $setOnInsert: { user: userId },
+      },
+      options
+    );
 
-    await MasterOpen.insertMany(documents);
+    console.log({ recentUpdatedIdMaster });
+
+    console.log(createdMaster);
+    return res.status(201).json({
+      masterId: recentUpdatedIdMaster,
+      RecentCreatedMasterData: createdMaster,
+    });
   } catch (error) {
     return res.status(500).json({ error: error });
   }
@@ -163,6 +207,7 @@ export const getAllMasterOpenDataController: RequestHandler = async (
   if (!_id) return res.status(401).json({ error: "user not authenticated!" });
   console.log(_id);
   try {
+    // const recentMaster = await RecentIds.find({masterId})
     const userAllData = await MasterOpen.find({ user: _id });
     if (!userAllData) return res.status(404).json({ error: "not data found!" });
     return res.status(200).json({ data: userAllData });
