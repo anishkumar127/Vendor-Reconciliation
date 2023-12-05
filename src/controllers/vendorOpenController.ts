@@ -4,6 +4,7 @@ import { RequestHandler } from "express";
 import { getUser } from "../services/auth";
 import { VendorOpen } from "../models/mixed/vendor.modal";
 import { v4 as uuidv4 } from "uuid";
+import { RecentIds } from "../models/mixed/RecentIds.model";
 
 // export const vendorOpenController = async (req: Request, res: Response) => {
 //     console.log(req.file);
@@ -122,6 +123,7 @@ export const vendorOpenController: RequestHandler = async (req, res) => {
   if (!user || !fileName || !data) {
     return res.status(400).json({ error: `missing required fields.}` });
   }
+  const { _id: userId }: any = await getUser(token);
   try {
     const uniqueId = uuidv4();
     console.log("uniqueId", uniqueId);
@@ -133,14 +135,44 @@ export const vendorOpenController: RequestHandler = async (req, res) => {
     //     data: data[i],
     //   });
     // }
-    const documents = data.map((item: any) => ({
+    // const documents = data.map((item: any) => ({
+    //   user,
+    //   fileName,
+    //   uniqueId,
+    //   data: item,
+    // }));
+
+    // await VendorOpen.insertMany(documents);
+
+    const obj: any = {};
+
+    data.forEach((item: any) => {
+      obj[item["Invoice Number"]] = item;
+    });
+    const createdVendor = await VendorOpen.create({
       user,
       fileName,
       uniqueId,
-      data: item,
-    }));
+      data: obj,
+    });
+    const ID = createdVendor._id;
+    const options = { new: true, upsert: true };
+    const recentUpdatedVendorId = await RecentIds.findOneAndUpdate(
+      { vendorId: { $exists: true } }, // Update documents where masterId field exists
+      {
+        $set: {
+          user: userId,
+          vendorId: ID,
+        },
+      },
+      options
+    );
 
-    await VendorOpen.insertMany(documents);
+    console.log({ recentUpdatedVendorId });
+    return res.status(201).json({
+      masterId: recentUpdatedVendorId,
+      RecentCreatedVendorData: createdVendor,
+    });
   } catch (error) {
     return res.status(500).json({ error: error });
   }
