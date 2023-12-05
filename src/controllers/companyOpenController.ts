@@ -213,16 +213,17 @@ export const getAllMasterOpenDataController: RequestHandler = async (
   req,
   res
 ) => {
-  console.log("HI");
   const token = (req as any)?.token;
-  console.log(token);
 
   const { _id }: any = await getUser(token);
+  const masterId = await RecentIds.findOne({ user: _id }).select("masterId");
+  console.log(masterId?.masterId);
+  if (!masterId) return res.status(404).json({ error: "masterId not found!" });
+
   if (!_id) return res.status(401).json({ error: "user not authenticated!" });
-  console.log(_id);
   try {
     // const recentMaster = await RecentIds.find({masterId})
-    const userAllData = await MasterOpen.find({ user: _id });
+    const userAllData = await MasterOpen.findOne({ _id: masterId?.masterId });
     if (!userAllData) return res.status(404).json({ error: "not data found!" });
     return res.status(200).json({ data: userAllData });
   } catch (error) {
