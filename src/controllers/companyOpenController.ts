@@ -171,18 +171,32 @@ export const masterOpenController: RequestHandler = async (req, res) => {
     //   options
     // );
     const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
-      { masterId: { $exists: true } },
+      { user: userId, masterId: { $exists: true } }, // Update documents where user is the same and masterId field exists
       {
         $set: {
           masterId: ID,
         },
-        $setOnInsert: { user: userId },
       },
       options
     );
 
-    console.log({ recentUpdatedIdMaster });
+    // If recentUpdatedIdMaster is null, create a new document
+    try {
+      if (!recentUpdatedIdMaster) {
+        const newDocument = await RecentIds.create({
+          user: userId,
+          masterId: ID,
+        });
+        return res.status(201).json({
+          masterId: recentUpdatedIdMaster,
+          RecentCreatedMasterData: newDocument,
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({ error: error });
+    }
 
+    console.log({ recentUpdatedIdMaster });
     console.log(createdMaster);
     return res.status(201).json({
       masterId: recentUpdatedIdMaster,

@@ -157,20 +157,36 @@ export const vendorOpenController: RequestHandler = async (req, res) => {
     });
     const ID = createdVendor._id;
     const options = { new: true, upsert: true };
+
     const recentUpdatedVendorId = await RecentIds.findOneAndUpdate(
-      { vendorId: { $exists: true } }, // Update documents where masterId field exists
+      { user: userId, masterId: { $exists: true } }, // Update documents where user is the same and masterId field exists
       {
         $set: {
-          user: userId,
           vendorId: ID,
         },
       },
       options
     );
 
+    // If recentUpdatedIdVendor is null, create a new document
+    try {
+      if (!recentUpdatedVendorId) {
+        const newDocument = await RecentIds.create({
+          user: userId,
+          vendorId: ID,
+        });
+        return res.status(201).json({
+          vendorId: recentUpdatedVendorId,
+          RecentCreatedVendorData: newDocument,
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({ error: error });
+    }
+
     console.log({ recentUpdatedVendorId });
     return res.status(201).json({
-      masterId: recentUpdatedVendorId,
+      vendorId: recentUpdatedVendorId,
       RecentCreatedVendorData: createdVendor,
     });
   } catch (error) {
