@@ -148,16 +148,30 @@ export const completeDetailsController: RequestHandler = async (req, res) => {
     const ID = createdDetails._id;
     const options = { new: true, upsert: true };
     const recentUpdatedDetailsId = await RecentIds.findOneAndUpdate(
-      { masterId: { $exists: true } }, // Update documents where masterId field exists
+      { user: userId, masterId: { $exists: true } }, // Update documents where user is the same and masterId field exists
       {
         $set: {
-          user: userId,
           detailsId: ID,
         },
       },
       options
     );
 
+    // If recentUpdatedIdMaster is null, create a new document
+    try {
+      if (!recentUpdatedDetailsId) {
+        const newDocument = await RecentIds.create({
+          user: userId,
+          detailsId: ID,
+        });
+        return res.status(201).json({
+          detailsId: recentUpdatedDetailsId,
+          RecentCreatedDetailsData: newDocument,
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({ error: error });
+    }
     console.log({ recentUpdatedDetailsId });
     return res.status(201).json({
       detailsId: recentUpdatedDetailsId,
