@@ -128,14 +128,22 @@ export const masterOpenController: RequestHandler = async (req, res) => {
   try {
     const uniqueId = uuidv4();
     console.log("uniqueId", uniqueId);
-    for (let i = 0; i < data?.length; i++) {
-      await MasterOpen.create({
-        user,
-        fileName,
-        uniqueId,
-        data: data[i],
-      });
-    }
+    // for (let i = 0; i < data?.length; i++) {
+    //   await MasterOpen.create({
+    //     user,
+    //     fileName,
+    //     uniqueId,
+    //     data: data[i],
+    //   });
+    // }
+    const documents = data.map((item: any) => ({
+      user,
+      fileName,
+      uniqueId,
+      data: item,
+    }));
+
+    await MasterOpen.insertMany(documents);
   } catch (error) {
     return res.status(500).json({ error: error });
   }

@@ -125,14 +125,22 @@ export const vendorOpenController: RequestHandler = async (req, res) => {
   try {
     const uniqueId = uuidv4();
     console.log("uniqueId", uniqueId);
-    for (let i = 0; i < data?.length; i++) {
-      await VendorOpen.create({
-        user,
-        fileName,
-        uniqueId,
-        data: data[i],
-      });
-    }
+    // for (let i = 0; i < data?.length; i++) {
+    //   await VendorOpen.create({
+    //     user,
+    //     fileName,
+    //     uniqueId,
+    //     data: data[i],
+    //   });
+    // }
+    const documents = data.map((item: any) => ({
+      user,
+      fileName,
+      uniqueId,
+      data: item,
+    }));
+
+    await VendorOpen.insertMany(documents);
   } catch (error) {
     return res.status(500).json({ error: error });
   }
