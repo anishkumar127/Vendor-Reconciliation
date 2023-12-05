@@ -27,6 +27,8 @@ import userSignUpRoutes from "./routes/user/userRoutes";
 
 // <------------------------- MAPPING ROUTES IMPORT [CONSTANTS] -------------------->
 import constantsRoute from "./routes/constants-route/constantsRoute";
+import generateReportRoute from "./routes/unmatched/generateReportRoutes";
+
 // import { checkForAuthentication } from "./middlewares/authMiddleware";
 import masterRoutes from "./routes/masterRoutes";
 import mongoose from "mongoose";
@@ -195,6 +197,7 @@ app.use("/api/user", userSignUpRoutes);
 // UNMATCHED
 
 // app.use("/api", unmatchedDetectRoutes);
+app.use("/api", generateReportRoute);
 
 // Constants
 app.use("/api", constantsRoute);
