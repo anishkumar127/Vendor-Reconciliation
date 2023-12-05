@@ -219,11 +219,11 @@ app.use("/api/master", masterRoutes);
 //     console.log("DB CONNECT ERROR", error);
 //   });
 
-const MONGO_URI: any =
-  process.env.NODE_ENV !== "production"
-    ? process.env.MONGO_LOCAL_URI
-    : process.env.MONGO_URI;
-
+// const MONGO_URI: any =
+//   process.env.NODE_ENV !== "production"
+//     ? process.env.MONGO_LOCAL_URI
+//     : process.env.MONGO_URI;
+const MONGO_URI: any = process.env.MONGO_URI;
 console.log(process.env.NODE_ENV === "production", MONGO_URI);
 mongoose
   .connect(MONGO_URI)
