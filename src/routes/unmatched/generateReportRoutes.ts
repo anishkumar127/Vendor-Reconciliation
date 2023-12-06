@@ -1,8 +1,8 @@
 import express from "express";
-import { generateCasePController } from "../../controllers/unmatched-controllers/generateCasePController";
+import { generateReportController } from "../../controllers/unmatched-controllers/generateReportController";
 import { authenticateToken } from "../../middlewares/authenticateToken";
 const router = express.Router();
 
-router.post("/generate-report", authenticateToken, generateCasePController);
+router.post("/generate-report", authenticateToken, generateReportController);
 
 export default router;
