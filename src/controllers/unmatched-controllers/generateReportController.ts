@@ -266,7 +266,8 @@ export const generateReportController: RequestHandler = async (req, res) => {
         }
       );
       await generateCasePController(res, matchedFullDetailsData);
-      return res.json({ matchedFullDetailsData });
+      //return res.json({ matchedFullDetailsData });
+      return;
     }
     return res.json({ diff: difference });
   } catch (error) {
@@ -335,6 +336,43 @@ const BalanceDifferenceCheck = async (masterData: any, vendorData: any) => {
 import fs from "fs";
 import XLSX from "xlsx";
 import path from "path";
+
+//  SAVING ON SERVER  BUT NOT FREE ON SERVERLESS
+
+// export const generateCasePController = async (
+//   res: any,
+//   forGenerateData: any
+// ) => {
+//   try {
+//     const worksheet = XLSX.utils.json_to_sheet(forGenerateData);
+
+//     const workbook = XLSX.utils.book_new();
+//     XLSX.utils.book_append_sheet(workbook, worksheet, "CaseP Data");
+
+//     const tempFilePath = path.join(__dirname, "../../../public/CasePData.xlsx");
+//     XLSX.writeFile(workbook, tempFilePath);
+//     console.log({ tempFilePath });
+//     res.download(tempFilePath, "CasePData.xlsx", (err: any) => {
+//       if (err) {
+//         console.error("Error downloading file:", err);
+//         return res.status(500).json({ error: "Failed to download Excel file" });
+//       }
+//       fs.unlink(tempFilePath, (unlinkErr) => {
+//         if (unlinkErr) {
+//           console.error("Error deleting file:", unlinkErr);
+//         }
+//       });
+//     });
+//   } catch (error) {
+//     console.error("Error generating Excel file:", error);
+//     return res.status(500).json({ error: "Failed to generate Excel file" });
+//   }
+//   return res.json({ message: "downloading done!" });
+//   // return res.json({ extractedMasterData,extractedVendorData });
+// };
+
+// DIRECT SEND TO CLIENT.
+
 export const generateCasePController = async (
   res: any,
   forGenerateData: any
@@ -345,24 +383,19 @@ export const generateCasePController = async (
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "CaseP Data");
 
-    const tempFilePath = path.join(__dirname, "../../../public/CasePData.xlsx");
-    XLSX.writeFile(workbook, tempFilePath);
-    console.log({ tempFilePath });
-    res.download(tempFilePath, "CasePData.xlsx", (err: any) => {
-      if (err) {
-        console.error("Error downloading file:", err);
-        return res.status(500).json({ error: "Failed to download Excel file" });
-      }
-      fs.unlink(tempFilePath, (unlinkErr) => {
-        if (unlinkErr) {
-          console.error("Error deleting file:", unlinkErr);
-        }
-      });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "buffer",
     });
+
+    res.attachment("CasePData.xlsx"); // Set the filename for download
+    res.type(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ); // Set content type for Excel
+
+    res.send(Buffer.from(excelBuffer)); // Send the Excel buffer directly to the client
   } catch (error) {
     console.error("Error generating Excel file:", error);
     return res.status(500).json({ error: "Failed to generate Excel file" });
   }
-  return res.json({ message: "downloading done!" });
-  // return res.json({ extractedMasterData,extractedVendorData });
 };
