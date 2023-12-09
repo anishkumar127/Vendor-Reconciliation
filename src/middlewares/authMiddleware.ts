@@ -74,8 +74,7 @@ export function checkForAuthentication(
 
 export const restrictTo =
   (roles: any[]) => async (req: Request, res: Response, next: NextFunction) => {
-    console.log(roles);
-    // const token = await req.cookies.access_token;
+    console.log({ roles });
     const authorizationHeaderValue = req.headers["authorization"];
     if (
       !authorizationHeaderValue ||
@@ -83,19 +82,15 @@ export const restrictTo =
     )
       return next();
 
-
     const token = authorizationHeaderValue?.split("Bearer ")[1];
-    if(!token){
+    // console.log({ token });
+    if (!token) {
       return next();
     }
 
     const user: any = await getUser(token);
-    console.log(user);
     if (!roles.includes(user?.role))
-     return res.status(401).json({ error: "not authorized." });
+      return res.status(401).json({ error: "not authorized." });
 
     next();
   };
-
-
-  

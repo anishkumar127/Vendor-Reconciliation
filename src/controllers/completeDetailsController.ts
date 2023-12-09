@@ -1,19 +1,18 @@
-import { RequestHandler } from "express";
 import mongoose from "mongoose";
-import { v4 as uuidv4 } from "uuid";
 import { yourSchema } from "../models/dynamic-schema/dynamicSchema";
-import { RecentIds } from "../models/mixed/RecentIds.model";
+import { v4 as uuidv4 } from "uuid";
+import { RequestHandler } from "express";
 import { getUser } from "../services/auth";
+import { RecentIds } from "../models/mixed/RecentIds.model";
 
-// UPLOAD VENDOR FILE. POST CALL.
-export const vendorFileUploadController: RequestHandler = async (req, res) => {
+export const completeDetailsFileUploadController: RequestHandler = async (
+  req,
+  res
+) => {
   const { data, fileName, user } = req.body;
-
   if (!data || !fileName || !user)
     return res.status(404).json({ error: "missing required fields!" });
-
   const token = (req as any)?.token;
-  console.log({ token });
   if (!token)
     return res.status(401).json({ error: "you are not authenticated" });
 
@@ -24,10 +23,10 @@ export const vendorFileUploadController: RequestHandler = async (req, res) => {
 
   let YourModel;
   try {
-    YourModel = mongoose.model(`${email}@vendorOpen`, yourSchema);
+    YourModel = mongoose.model(`${email}@complete`, yourSchema);
   } catch (error) {
     console.log(error);
-    YourModel = mongoose.model(`${email}@vendorOpen`);
+    YourModel = mongoose.model(`${email}@complete`);
   }
 
   const uniqueId = uuidv4();
@@ -43,10 +42,10 @@ export const vendorFileUploadController: RequestHandler = async (req, res) => {
     // UPDATE THE RECENT IDS.
     const options = { new: true, upsert: true };
     const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
-      { user: _id, masterId: { $exists: true } }, // Update documents where user is the same and masterId field exists
+      { user: _id, masterId: { $exists: true } },
       {
         $set: {
-          vendorId: uniqueId,
+          detailsId: uniqueId,
         },
       },
       options
@@ -55,13 +54,12 @@ export const vendorFileUploadController: RequestHandler = async (req, res) => {
     if (!recentUpdatedIdMaster) {
       await RecentIds.create({
         user: _id,
-        vendorId: uniqueId,
+        detailsId: uniqueId,
       });
     }
   } catch (error) {
     console.log(error);
   }
-
   return res.status(201).json({
     message: "Documents created successfully",
   });
