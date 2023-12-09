@@ -8,16 +8,16 @@ const userSchema = new Schema(
     username: {
       type: String,
       required: true,
-      unqiue: true,
-      lowecase: true,
+      unique: true,
+      lowercase: true,
       trim: true,
       index: true,
     },
     email: {
       type: String,
       required: true,
-      unqiue: true,
-      lowecase: true,
+      unique: true,
+      lowercase: true,
       trim: true,
       index: true,
     },
@@ -29,14 +29,13 @@ const userSchema = new Schema(
     },
     adminId: {
       type: mongoose.Types.ObjectId,
-      default:null
+      default: null,
     },
     role: {
       type: String,
       enum: ["USER", "ADMIN", "MASTER", "GUEST"],
       default: "USER",
       required: true,
-      // default: "USER",
     },
     avatar: {
       type: String, // cloudinary url.
