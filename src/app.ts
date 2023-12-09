@@ -8,6 +8,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 dotenv.config();
+import { v4 as uuidv4 } from "uuid";
+
 // <------------------------- MODELS IMPORT  -------------------->
 // import { User } from "./models/user.model";
 // import { CompanyOpen } from "./models/company.model";
@@ -31,10 +33,12 @@ import generateReportRoute from "./routes/unmatched/generateReportRoutes";
 
 // import { checkForAuthentication } from "./middlewares/authMiddleware";
 import masterRoutes from "./routes/masterRoutes";
-import mongoose from "mongoose";
+import mongoose, { Aggregate } from "mongoose";
 // import { restrictToLoggedInUserOnly } from "./middlewares/authMiddleware";
-
+import connection from "./config/database";
 import bodyParser from "body-parser";
+import { MasterOpen } from "./models/Master.model";
+// import { mongoConnect } from "./config/database";
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
@@ -225,8 +229,264 @@ app.use("/api/master", masterRoutes);
 //     ? process.env.MONGO_LOCAL_URI
 //     : process.env.MONGO_URI;
 
-const MONGO_URI: any = process.env.MONGO_URI;
-// const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
+// app.post("/dynamic", async (req: Request, res: Response) => {
+//   // const { data } = req.body;
+//   // if (!data) return;
+//   const data = {
+//     data: "OK",
+//   };
+//   const yourSchema = new mongoose.Schema({
+//     data: mongoose.Schema.Types.Mixed,
+//   });
+//   const YourModel = mongoose.model("YourModel", yourSchema, "YourModel");
+
+//   const yourDocument = await YourModel.create({
+//     data,
+//   });
+
+//   console.log(yourDocument);
+//   // return res.json({yourDocument});
+// });
+const yourSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  fileName: { type: String, required: true },
+  uniqueId: { type: String, required: true },
+  data: mongoose.Schema.Types.Mixed,
+});
+
+app.post("/dynamic-master", async (req, res) => {
+  const { data, fileName, user } = req.body;
+
+  let YourModel;
+  try {
+    YourModel = mongoose.model("anish@gmail.com@masterOpen", yourSchema);
+  } catch (error) {
+    console.log(error);
+    YourModel = mongoose.model("anish@gmail.com@masterOpen");
+  }
+
+  const uniqueId = uuidv4();
+  try {
+    // const yourDocument = await YourModel?.create({
+    //   user,
+    //   fileName,
+    //   uniqueId,
+    //   data: data[i],
+    // });
+    await YourModel.insertMany(
+      data.map((item: any) => ({
+        user,
+        fileName,
+        uniqueId,
+        data: item,
+      }))
+    );
+  } catch (error) {
+    console.log(error);
+  }
+
+  return res.send({
+    message: "Documents created successfully",
+  });
+});
+
+// vendor
+app.post("/dynamic-vendor", async (req, res) => {
+  const { data, fileName, user } = req.body;
+
+  const yourSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    fileName: { type: String, required: true },
+    uniqueId: { type: String, required: true },
+    data: mongoose.Schema.Types.Mixed,
+  });
+  let YourModel;
+  try {
+    YourModel = mongoose.model(
+      "anish@gmail.com@vendorOpen",
+      yourSchema,
+      "anish@gmail.com@vendorOpen"
+    );
+  } catch (error) {
+    console.log(error);
+    YourModel = mongoose.model("anish@gmail.com@vendorOpen");
+  }
+
+  const uniqueId = uuidv4();
+
+  for (let i = 0; i < data?.length; i++) {
+    try {
+      // @ts-ignore
+      const yourDocument = await YourModel?.create({
+        user,
+        fileName,
+        uniqueId,
+        data: data[i],
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  // console.log(yourDocument);
+});
+// complete details
+app.post("/dynamic-complete", async (req, res) => {
+  const { data, fileName, user } = req.body;
+
+  const yourSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    fileName: { type: String, required: true },
+    uniqueId: { type: String, required: true },
+    data: mongoose.Schema.Types.Mixed,
+  });
+  let YourModel;
+  try {
+    YourModel = mongoose.model("anish@gmail.com@complete", yourSchema);
+  } catch (error) {
+    console.log(error);
+    YourModel = mongoose.model("anish@gmail.com@complete");
+  }
+
+  const uniqueId = uuidv4();
+
+  for (let i = 0; i < data?.length; i++) {
+    try {
+      // @ts-ignore
+      const yourDocument = await YourModel?.create({
+        user,
+        fileName,
+        uniqueId,
+        data: data[i],
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  // console.log(yourDocument);
+});
+
+// report generate
+
+// app.post("/dynamic-report", async (req, res) => {
+//   const { vendorName } = req.body;
+//   console.log(vendorName);
+//   const yourModel = "anish@gmail.com@masterOpens";
+
+//   let Collection;
+//   try {
+//     //@ts-ignore
+//     Collection = await connection.model(yourModel);
+//   } catch (error: any) {
+//     console.log(error.message);
+//     //come
+//     //@ts-ignore
+
+//     Collection = await connection.model(yourModel, yourSchema);
+//   }
+//   //@ts-ignore
+//   // console.log(await MasterOpen.find());
+//   console.log(Collection);
+//   //@ts-ignore
+//   console.log(await Collection.find());
+//   const data = await Collection.aggregate([
+//     {
+//       $match: {
+//         "data.Vendor Name": "UNIPARTS INDIA LTD",
+//       },
+//     },
+//     {
+//       $lookup: {
+//         from: "anish@gmail.com@vendorOpen",
+//         localField: "data.Invoice Number",
+//         foreignField: "data.Invoice Number",
+//         as: "result",
+//       },
+//     },
+//     {
+//       $unwind: {
+//         path: "$result",
+//       },
+//     },
+//   ]);
+
+//   console.log("DATA,", data);
+//   return res.send({
+//     message: "ok",
+//   });
+// });
+
+//  test generate report
+function removeCommas(value: any) {
+  return value.replace(/,/g, "");
+}
+function getModelByString(str: any) {
+  const yourModel = str;
+
+  const yourSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    fileName: { type: String, required: true },
+    uniqueId: { type: String, required: true },
+    data: mongoose.Schema.Types.Mixed,
+  });
+
+  let Collection;
+  try {
+    Collection = mongoose.model(yourModel, yourSchema);
+  } catch (error) {
+    console.log(error);
+  }
+
+  return Collection;
+}
+app.post("/dynamic-report", async (req, res) => {
+  const { vendorName } = req.body;
+  console.log(vendorName);
+
+  const Collection: any = getModelByString("anish@gmail.com@masterOpen");
+
+  console.log(Collection);
+  // console.log(await Collection.find());
+
+  try {
+    const data = await Collection.aggregate([
+      {
+        $match: {
+          "data.Vendor Name": "UNIPARTS INDIA LTD",
+        },
+      },
+      {
+        $lookup: {
+          from: "anish@gmail.com@vendorOpen",
+          localField: "data.Invoice Number",
+          foreignField: "data.Invoice Number",
+          as: "result",
+        },
+      },
+      {
+        $unwind: {
+          path: "$result",
+        },
+      },
+    ]);
+
+    for (let i = 0; i < data.length; i++) {
+      const first = removeCommas(data[i].data["Closing Balance"]);
+      const second = removeCommas(data[i].result.data["Closing Balance"]);
+      const diff = +second - +first;
+      const lastCollection = getModelByString("anish@gmail.com@complete");
+    }
+
+    return res.send({
+      message: "ok",
+      data: data,
+    });
+  } catch (error) {
+    console.error("Error in aggregation:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+// const MONGO_URI: any = process.env.MONGO_URI;
+const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
 console.log(process.env.NODE_ENV === "production", MONGO_URI);
 mongoose
   .connect(MONGO_URI)
