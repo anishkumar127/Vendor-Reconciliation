@@ -10,10 +10,10 @@ function removeCommas(value: any) {
 }
 
 // REUSABLE MODEL SCHEMA AND MODEL NAME.
-function getModelByString(str: any) {
+async function getModelByString(str: any) {
   const yourModel = str;
 
-  const yourSchema = new mongoose.Schema(
+  const yourSchema = await new mongoose.Schema(
     {
       user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -29,12 +29,12 @@ function getModelByString(str: any) {
 
   let Collection;
   try {
-    Collection = mongoose.model(yourModel, yourSchema);
+    Collection = await mongoose.model(yourModel, yourSchema);
   } catch (error) {
     console.log(error);
   }
 
-  return Collection;
+  return await Collection;
 }
 
 export const dynamicReportGenerateController: RequestHandler = async (
@@ -45,8 +45,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
   if (!vendorName)
     return res.status(404).json({ error: "missing required fields!" });
 
-  console.log({ vendorName });
-
   const token = (req as any)?.token;
   if (!token)
     return res.status(401).json({ error: "you are not authenticated" });
@@ -56,21 +54,27 @@ export const dynamicReportGenerateController: RequestHandler = async (
   if (!_id || !email)
     return res.status(401).json({ error: "user not authenticated!" });
 
-  const recentIds = await RecentIds.findOne({
-    user: _id,
-  });
-
-  console.log({ recentIds });
-  console.log("masterID", recentIds?.masterId, "vendorId", recentIds?.vendorId);
-
   const Collection: any = await getModelByString(`${email}@masterOpen`);
 
   const vendorCollection: any = await getModelByString(`${email}@vendorOpen`);
 
-  if (!Collection || vendorCollection)
+  console.log({ Collection });
+  console.log({ vendorCollection });
+
+  if (!Collection || !vendorCollection)
     return res.status(500).json({ error: "schema error!" });
 
-  console.log(recentIds?.masterId);
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(4040).json({ error: "no recent ids present." });
+
+  console.log({ _id });
+
+  console.log({ recentIds });
+
   try {
     const data = await Collection.aggregate([
       {
@@ -99,7 +103,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
-    console.log("COMES", { data });
     if (!data) return res.status(500).json({ error: "server query error!" });
 
     const matchedData: any = [];
@@ -110,28 +113,26 @@ export const dynamicReportGenerateController: RequestHandler = async (
       console.log({ diff });
       if (diff) {
         const lastCollection = await getModelByString(`${email}@complete`);
-
         const invoiceNumber = data[i]?.result?.data["Invoice Number"];
-        console.log(invoiceNumber);
         const lastData = await lastCollection?.find({
           "data.Invoice Number": invoiceNumber,
           uniqueId: recentIds?.detailsId,
         });
-        console.log("MATCHED", lastData);
+        // console.log("MATCHED", lastData);
         if (lastData) {
-          // matchedData.push(lastData);
           matchedData.push(lastData.map((item) => item.data));
         }
       }
     }
 
     //  GENERATE P CASE.
-    const flattenedData = matchedData.flat();
+    const flattenedData = await matchedData.flat();
 
-    let idx: number = 0;
+    let idx: number = 1;
     for (const item of flattenedData) {
-      const pCaseInstance = new PCase({
+      const pCaseInstance = await new PCase({
         user: new mongoose.Types.ObjectId(_id),
+        uniqueId: recentIds?.masterId,
         SNO: idx++,
         "Company Code": item["Company Code"],
         "Document Number": item["Document Number"],
@@ -142,8 +143,9 @@ export const dynamicReportGenerateController: RequestHandler = async (
       });
 
       try {
-        const savedInstance = await pCaseInstance.save();
-        console.log(`Data saved: ${savedInstance}`);
+        await pCaseInstance.save();
+        // const savedInstance = await pCaseInstance.save();
+        // console.log(`Data saved: ${savedInstance}`);
       } catch (error) {
         console.error(`Error saving data: ${error}`);
       }

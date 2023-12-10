@@ -6,6 +6,7 @@ export const RecentIdsSchema = new Schema(
     masterId: { type: Schema.Types.Mixed, required: false },
     vendorId: { type: Schema.Types.Mixed, required: false },
     detailsId: { type: Schema.Types.Mixed, required: false },
+    reportId: { type: Schema.Types.Mixed, required: false },
   },
   { timestamps: true }
 );
