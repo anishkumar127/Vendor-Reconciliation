@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import PCase from "../../models/cases/PCase.model";
 import { getUser } from "../../services/auth";
+import { RecentIds } from "../../models/mixed/RecentIds.model";
 // export const generateCasePController = async (
 //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 //   req: Request,
@@ -71,11 +72,31 @@ export const getPCaseGeneratedReport: RequestHandler = async (req, res) => {
   if (!_id || !email)
     return res.status(401).json({ error: "user not authenticated!" });
 
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(4040).json({ error: "no recent ids present." });
+  console.log(recentIds.masterId);
   try {
-    const pCaseReport = await PCase.find({ user: _id })
-      .sort({ createdAt: -1 })
-      .limit(1)
-      .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
+    // const pCaseReport = await PCase.find({ user: _id ,})
+    //   .sort({ createdAt: -1 })
+    //   .limit(1)
+    //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
+
+    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+    const pCaseReport = await PCase.find({
+      user: _id,
+      uniqueId: recentIds?.masterId,
+    }).select({
+      updatedAt: 0,
+      createdAt: 0,
+      user: 0,
+      _id: 0,
+      __v: 0,
+      uniqueId: 0,
+    });
 
     return res.send(pCaseReport);
   } catch (error) {
