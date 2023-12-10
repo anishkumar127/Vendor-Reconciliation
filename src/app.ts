@@ -15,6 +15,7 @@ import masterRoutes from "./routes/masterRoutes";
 import vendorOpenRoute from "./routes/vendorOpenRoutes";
 
 import generateReportRoutes from "./routes/unmatched/generateReportRoutes";
+import mappingFileRoute from "./routes/mapping-route/mappingFileRoutes";
 // <------------------------- USER ROUTES IMPORT  -------------------->
 import userSignUpRoutes from "./routes/user/userRoutes";
 
@@ -66,6 +67,8 @@ app.use("/api/complete", completeDetailsRoute);
 app.use("/api/report", dynamicReportGenerateRoute);
 
 app.use("/api/generate-report", generateReportRoutes);
+
+app.use("/api/mapping", mappingFileRoute);
 // <------------------------- DATABASE CONNECT -------------------->
 
 // const MONGO_URI: any = process.env.MONGO_URI;
