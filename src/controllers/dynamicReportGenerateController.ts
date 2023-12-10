@@ -13,6 +13,12 @@ function removeCommas(value: any) {
 async function getModelByString(str: any) {
   const yourModel = str;
 
+  // CACHED MONGOOSE MODEL RETURN.
+  if (mongoose.models[yourModel]) {
+    return mongoose.model(yourModel);
+  }
+
+  // IF NOT CACHED THEN MAKE IT NEW SCHEMA.
   const yourSchema = await new mongoose.Schema(
     {
       user: {
@@ -26,15 +32,7 @@ async function getModelByString(str: any) {
     },
     { timestamps: true }
   );
-
-  let Collection;
-  try {
-    Collection = await mongoose.model(yourModel, yourSchema);
-  } catch (error) {
-    console.log(error);
-  }
-
-  return await Collection;
+  return mongoose.model(yourModel, yourSchema);
 }
 
 export const dynamicReportGenerateController: RequestHandler = async (
@@ -110,17 +108,18 @@ export const dynamicReportGenerateController: RequestHandler = async (
       const first = removeCommas(data[i]?.data["Closing Balance"]);
       const second = removeCommas(data[i]?.result?.data["Closing Balance"]);
       const diff = +second - +first;
-      console.log({ diff });
+      // console.log({ diff });
       if (diff) {
         const lastCollection = await getModelByString(`${email}@complete`);
-        const invoiceNumber = data[i]?.result?.data["Invoice Number"];
-        const lastData = await lastCollection?.find({
-          "data.Invoice Number": invoiceNumber,
-          uniqueId: recentIds?.detailsId,
-        });
-        // console.log("MATCHED", lastData);
-        if (lastData) {
-          matchedData.push(lastData.map((item) => item.data));
+        if (lastCollection) {
+          const invoiceNumber = data[i]?.result?.data["Invoice Number"];
+          const lastData = await (lastCollection as mongoose.Model<any>).find({
+            "data.Invoice Number": invoiceNumber,
+            uniqueId: recentIds?.detailsId,
+          });
+          if (lastData) {
+            matchedData.push(lastData.map((item: any) => item.data));
+          }
         }
       }
     }
