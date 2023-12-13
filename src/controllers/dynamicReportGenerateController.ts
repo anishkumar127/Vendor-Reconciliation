@@ -5,6 +5,9 @@ import { getUser } from "../services/auth";
 import PCase from "../models/cases/PCase.model";
 import KCase from "../models/cases/KCase.model";
 
+// Annexure FORMAT
+const Annexure: any[] = ["AnnexureP", "AnnexureK"];
+
 // IN AMOUNT NUMBER HAS THE COMMA (,) REMOVING.
 function removeCommas(value: any) {
   return value.replace(/,/g, "");
@@ -40,10 +43,11 @@ export const dynamicReportGenerateController: RequestHandler = async (
   req,
   res
 ) => {
-  const { vendorName } = req.body;
+  const { vendorName, documentType } = req.body;
   if (!vendorName)
     return res.status(404).json({ error: "missing required fields!" });
 
+  // return res.send(documentType);
   const token = (req as any)?.token;
   if (!token)
     return res.status(401).json({ error: "you are not authenticated" });
@@ -104,8 +108,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     if (!data) return res.status(500).json({ error: "server query error!" });
 
-    const matchedData: any = [];
-
     const matchPCaseData: any = [];
 
     const matchKCaseData: any = [];
@@ -115,19 +117,26 @@ export const dynamicReportGenerateController: RequestHandler = async (
     for (let i = 0; i < data?.length; i++) {
       const first = removeCommas(data[i]?.data["Closing Balance"]);
       const second = removeCommas(data[i]?.result?.data["Closing Balance"]);
+      // FIND THE DIFFERENCE.
       const diff = +second - +first;
-      if (diff) {
+      if (diff && diff > 1) {
+        // IF DIFFERENCE GREATER THEN 1.
+
+        // GET 3RD COLLECTION
         const lastCollection = await getModelByString(`${email}@complete`);
         if (lastCollection) {
+          // SEARCH THE INVOICE NUMBER WHICH IS FIND IN 2ND COLLECTION
           const invoiceNumber = data[i]?.result?.data["Invoice Number"];
+          // IF THAT'S 2ND COLLECTION INVOICE NUMBER PRESENT INTO 3RD COLLECTION. GET THAT'S INVOICE NUMBER DATA.
           const lastData = await (lastCollection as mongoose.Model<any>).find({
             "data.Invoice Number": invoiceNumber,
             uniqueId: recentIds?.detailsId,
           });
 
-          for (let i = 0; i < lastData?.length; i++) {
+          // IF DATA THEN GET INTO 3RD COLLECTION DOCUMENT NUMBER. AND CHECK DOCUMENT NUMBER TYPE. IF THAT'S START OR END OR CONTAINS WITH PID OR TDS THEN THAT'S STORE INTO DIFFERENT COLLECTION.
+          for (let z = 0; z < lastData?.length; z++) {
             //  MATCHING THE DOCUMENT TYPE.
-            const documentNumber = lastData[i]?.data["Document Number"];
+            const documentNumber = lastData[z]?.data["Document Number"];
             if (
               documentNumber &&
               (documentNumber.startsWith("PID") ||
@@ -151,15 +160,13 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
-    //  GENERATE P CASE.
-    const flattenedData = await matchedData.flat();
-
-    // TEST P CASE
+    // TEST P CASE - IF P CASE SUCCESS.
     const pCaseDataFlat = await matchPCaseData.flat();
 
-    // TEST K CASE
+    // TEST K CASE - IF K CASE SUCCESS.
     const kCaseDataFlat = await matchKCaseData.flat();
 
+    // STORE INTO THE P CASE COLLECTION
     if (isPCaseTrue) {
       let idx: number = 1;
       for (const item of pCaseDataFlat) {
@@ -183,6 +190,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
+    // STORE INTO K CASE COLLECTION.
     if (isKCaseTrue) {
       let idx: number = 1;
       for (const item of kCaseDataFlat) {
@@ -208,7 +216,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     return res.status(200).json({
       message: "ok",
-      data: flattenedData,
+      // data: ,
       success: "ok",
     });
   } catch (error) {
