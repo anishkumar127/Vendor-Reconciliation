@@ -55,7 +55,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
   const Collection: any = await getModelByString(`${email}@masterOpen`);
 
   const vendorCollection: any = await getModelByString(`${email}@vendorOpen`);
-  const lastCollection: any = await getModelByString(`${email}@complete`);
+  // const lastCollection: any = await getModelByString(`${email}@complete`);
 
   console.log({ Collection });
   console.log({ vendorCollection });
@@ -101,6 +101,90 @@ export const dynamicReportGenerateController: RequestHandler = async (
     //     },
     //   },
     // ]);
+
+    // working state
+    // const data = await Collection.aggregate([
+    //   {
+    //     $match: {
+    //       "data.Vendor Name": vendorName,
+    //       uniqueId: recentIds?.masterId,
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: vendorCollection.collection.name,
+    //       localField: "data.Invoice Number",
+    //       foreignField: "data.Invoice Number",
+    //       as: "result",
+    //     },
+    //   },
+    //   {
+    //     $unwind: {
+    //       path: "$result",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       "result.uniqueId": recentIds?.vendorId,
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       data: 1,
+    //       result: 1,
+    //       first: {
+    //         $toDouble: {
+    //           $replaceAll: {
+    //             input: "$data.Closing Balance",
+    //             find: ",",
+    //             replacement: "",
+    //           },
+    //         },
+    //       },
+    //       second: {
+    //         $toDouble: {
+    //           $replaceAll: {
+    //             input: "$result.data.Closing Balance",
+    //             find: ",",
+    //             replacement: "",
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       data: 1,
+    //       result: 1,
+    //       diff: { $subtract: ["$second", "$first"] },
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       diff: { $gt: 1 },
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: lastCollection.collection.name,
+    //       localField: "data.Invoice Number",
+    //       foreignField: "data.Invoice Number",
+    //       as: "finalresult",
+    //     },
+    //   },
+    //   {
+    //     $unwind: {
+    //       path: "$finalresult",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       "finalresult.uniqueId": recentIds?.detailsId,
+    //     },
+    //   },
+    // ]);
+
+    // test 2
     const data = await Collection.aggregate([
       {
         $match: {
@@ -162,35 +246,26 @@ export const dynamicReportGenerateController: RequestHandler = async (
           diff: { $gt: 1 },
         },
       },
-      {
-        $lookup: {
-          from: lastCollection.collection.name,
-          localField: "data.Invoice Number",
-          foreignField: "data.Invoice Number",
-          as: "finalresult",
-        },
-      },
-      {
-        $unwind: {
-          path: "$finalresult",
-        },
-      },
-      {
-        $match: {
-          "finalresult.uniqueId": recentIds?.detailsId,
-        },
-      },
+      // {
+      //   $lookup: {
+      //     from: lastCollection.collection.name,
+      //     localField: "data.Invoice Number",
+      //     foreignField: "data.Invoice Number",
+      //     as: "finalresult",
+      //   },
+      // },
+      // {
+      //   $unwind: {
+      //     path: "$finalresult",
+      //   },
+      // },
+      // {
+      //   $match: {
+      //     "finalresult.uniqueId": recentIds?.detailsId,
+      //   },
+      // },
     ]);
 
-    for (let i = 0; i < data?.length; i++) {
-      console.log(
-        data[i].data["Invoice Number"],
-        data[i].result.data["Invoice Number"],
-        data[i].finalresult.data["Invoice Number"],
-        data[i].finalresult.data.uniqueId,
-        data[i].finalresult.data["Document Number"]
-      );
-    }
     if (!data) return res.status(500).json({ error: "server query error!" });
 
     const matchPCaseData: any = [];
@@ -200,35 +275,139 @@ export const dynamicReportGenerateController: RequestHandler = async (
     let isKCaseTrue: boolean = false;
 
     for (let i = 0; i < data?.length; i++) {
-      //  MATCHING THE DOCUMENT TYPE.
-      const documentNumber = data[i].finalresult.data["Document Number"];
-      if (
-        documentNumber &&
-        (documentNumber.startsWith("PID") ||
-          documentNumber.endsWith("PID") ||
-          documentNumber.includes("PID"))
-      ) {
-        isPCaseTrue = true;
-        matchPCaseData.push(data[i]?.finalresult);
-      } else if (
-        documentNumber &&
-        (documentNumber.startsWith("TDS") ||
-          documentNumber.endsWith("TDS") ||
-          documentNumber.includes("TDS"))
-      ) {
-        isKCaseTrue = true;
-        console.log("K", data[i]?.finalresult);
-        matchKCaseData.push(data[i]?.finalresult);
+      const lastCollection = await getModelByString(`${email}@complete`);
+      if (lastCollection) {
+        const invoiceNumber = data[i]?.result?.data["Invoice Number"];
+        const escapedInvoiceNumber = invoiceNumber.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&"
+        );
+        // console.log(invoiceNumber, "+", escapedInvoiceNumber);
+        const regex = new RegExp(escapedInvoiceNumber, "i");
+        const lastData = await (lastCollection as mongoose.Model<any>).find({
+          "data.Invoice Number": { $regex: regex },
+          uniqueId: recentIds?.detailsId,
+        });
+
+        // res.send(lastData);
+        for (let z = 0; z < lastData?.length; z++) {
+          // console.log(lastData[z]?.data["Document Number"]);
+          const documentNumber = lastData[z]?.data["Document Number"];
+          if (
+            documentNumber &&
+            (documentNumber.startsWith("PID") ||
+              documentNumber.endsWith("PID") ||
+              documentNumber.includes("PID"))
+          ) {
+            isPCaseTrue = true;
+            // console.log(lastData[i]);
+            matchPCaseData.push(lastData[z]);
+          } else if (
+            documentNumber &&
+            (documentNumber.startsWith("TDS") ||
+              documentNumber.endsWith("TDS") ||
+              documentNumber.includes("TDS"))
+          ) {
+            isKCaseTrue = true;
+            matchKCaseData.push(lastData[z]);
+          }
+        }
       }
     }
 
+    // data?.forEach(async (item: any) => {
+    //   try {
+    //     const lastCollection = await getModelByString(`${email}@complete`);
+
+    //     if (lastCollection) {
+    //       console.log("HI1");
+    //       const invoiceNumber = item?.result?.data["Invoice Number"];
+
+    //       if (invoiceNumber) {
+    //         console.log("HI2");
+
+    //         const escapedInvoiceNumber = invoiceNumber.replace(
+    //           /[.*+?^${}()|[\]\\]/g,
+    //           "\\$&"
+    //         );
+    //         const regex = new RegExp(escapedInvoiceNumber, "i");
+
+    //         const lastData = await (lastCollection as mongoose.Model<any>).find(
+    //           {
+    //             "data.Invoice Number": { $regex: regex },
+    //             uniqueId: recentIds?.detailsId,
+    //           }
+    //         );
+
+    //         if (lastData && lastData?.length > 0) {
+    //           lastData?.forEach((lastItem) => {
+    //             const documentNumber = lastItem?.data["Document Number"];
+    //             console.log(invoiceNumber, documentNumber);
+
+    //             console.log(documentNumber.includes("PID"));
+    //             if (documentNumber) {
+    //               if (
+    //                 documentNumber.startsWith("PID") ||
+    //                 documentNumber.endsWith("PID") ||
+    //                 documentNumber.includes("PID")
+    //               ) {
+    //                 isPCaseTrue = true;
+    //                 // console.log(lastItem);
+    //                 matchPCaseData.push(lastItem);
+    //               } else if (
+    //                 documentNumber.startsWith("TDS") ||
+    //                 documentNumber.endsWith("TDS") ||
+    //                 documentNumber.includes("TDS")
+    //               ) {
+    //                 isKCaseTrue = true;
+    //                 // console.log("K", lastItem);
+    //                 matchKCaseData.push(lastItem);
+    //               }
+    //             }
+    //           });
+    //         }
+    //       }
+    //     }
+    //   } catch (error) {
+    //     // console.error("Error:", error);
+    //   }
+    // });
+
+    // res.send({ matchKCaseData });
+    // old way working code.
+    // for (let i = 0; i < data?.length; i++) {
+    //   //  MATCHING THE DOCUMENT TYPE.
+    //   const documentNumber = data[i].finalresult.data["Document Number"];
+    //   if (
+    //     documentNumber &&
+    //     (documentNumber.startsWith("PID") ||
+    //       documentNumber.endsWith("PID") ||
+    //       documentNumber.includes("PID"))
+    //   ) {
+    //     isPCaseTrue = true;
+    //     matchPCaseData.push(data[i]?.finalresult);
+    //   } else if (
+    //     documentNumber &&
+    //     (documentNumber.startsWith("TDS") ||
+    //       documentNumber.endsWith("TDS") ||
+    //       documentNumber.includes("TDS"))
+    //   ) {
+    //     isKCaseTrue = true;
+    //     console.log("K", data[i]?.finalresult);
+    //     matchKCaseData.push(data[i]?.finalresult);
+    //   }
+    // }
+
     // TEST P CASE - IF P CASE SUCCESS.
+
+    // console.log({ matchPCaseData, isPCaseTrue });
     const pCaseDataFlat = await matchPCaseData.flat();
 
     // TEST K CASE - IF K CASE SUCCESS.
     const kCaseDataFlat = await matchKCaseData.flat();
-
+    // console.log({ kCaseDataFlat });
     // STORE INTO THE P CASE COLLECTION
+    console.log({ kCaseDataFlat, isKCaseTrue });
     if (isPCaseTrue) {
       let idx: number = 1;
       for (const item of pCaseDataFlat) {
@@ -236,12 +415,12 @@ export const dynamicReportGenerateController: RequestHandler = async (
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
-          "Company Code": item.data["Company Code"],
-          "Document Number": item.data["Document Number"],
-          "Document Date": item.data["Document Date"],
-          "Invoice Number": item.data["Invoice Number"],
-          "Grn Number": item.data["Grn Number"],
-          "Debit Amount(INR)": item.data["Debit Amount(INR)"],
+          "Company Code": item?.data["Company Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Grn Number": item?.data["Grn Number"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
         });
 
         try {
@@ -260,12 +439,12 @@ export const dynamicReportGenerateController: RequestHandler = async (
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
-          "Company Code": item.data["Company Code"],
-          "Document Number": item.data["Document Number"],
-          "Document Date": item.data["Document Date"],
-          "Invoice Number": item.data["Invoice Number"],
-          "Grn Number": item.data["Grn Number"],
-          "Debit Amount(INR)": item.data["Debit Amount(INR)"],
+          "Company Code": item?.data["Company Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Grn Number": item?.data["Grn Number"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
         });
 
         try {
@@ -278,7 +457,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     return res.status(200).json({
       message: "ok",
-      // data: ,
+      data: data,
       success: "ok",
     });
   } catch (error) {
