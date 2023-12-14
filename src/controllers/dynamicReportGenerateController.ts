@@ -6,12 +6,7 @@ import PCase from "../models/cases/PCase.model";
 import KCase from "../models/cases/KCase.model";
 
 // Annexure FORMAT
-const Annexure: any[] = ["AnnexureP", "AnnexureK"];
-
-// IN AMOUNT NUMBER HAS THE COMMA (,) REMOVING.
-function removeCommas(value: any) {
-  return value.replace(/,/g, "");
-}
+// const Annexure: any[] = ["AnnexureP", "AnnexureK"];
 
 // REUSABLE MODEL SCHEMA AND MODEL NAME.
 async function getModelByString(str: any) {
@@ -60,6 +55,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
   const Collection: any = await getModelByString(`${email}@masterOpen`);
 
   const vendorCollection: any = await getModelByString(`${email}@vendorOpen`);
+  const lastCollection: any = await getModelByString(`${email}@complete`);
 
   console.log({ Collection });
   console.log({ vendorCollection });
@@ -72,13 +68,39 @@ export const dynamicReportGenerateController: RequestHandler = async (
   });
 
   if (!recentIds)
-    return res.status(4040).json({ error: "no recent ids present." });
+    return res.status(404).json({ error: "no recent ids present." });
 
   console.log({ _id });
 
   console.log({ recentIds });
 
   try {
+    // const data = await Collection.aggregate([
+    //   {
+    //     $match: {
+    //       "data.Vendor Name": vendorName,
+    //       uniqueId: recentIds?.masterId,
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: vendorCollection.collection.name,
+    //       localField: "data.Invoice Number",
+    //       foreignField: "data.Invoice Number",
+    //       as: "result",
+    //     },
+    //   },
+    //   {
+    //     $unwind: {
+    //       path: "$result",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       "result.uniqueId": recentIds?.vendorId,
+    //     },
+    //   },
+    // ]);
     const data = await Collection.aggregate([
       {
         $match: {
@@ -104,8 +126,71 @@ export const dynamicReportGenerateController: RequestHandler = async (
           "result.uniqueId": recentIds?.vendorId,
         },
       },
+      {
+        $project: {
+          data: 1,
+          result: 1,
+          first: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+          second: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$result.data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          data: 1,
+          result: 1,
+          diff: { $subtract: ["$second", "$first"] },
+        },
+      },
+      {
+        $match: {
+          diff: { $gt: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: lastCollection.collection.name,
+          localField: "data.Invoice Number",
+          foreignField: "data.Invoice Number",
+          as: "finalresult",
+        },
+      },
+      {
+        $unwind: {
+          path: "$finalresult",
+        },
+      },
+      {
+        $match: {
+          "finalresult.uniqueId": recentIds?.detailsId,
+        },
+      },
     ]);
 
+    for (let i = 0; i < data?.length; i++) {
+      console.log(
+        data[i].data["Invoice Number"],
+        data[i].result.data["Invoice Number"],
+        data[i].finalresult.data["Invoice Number"],
+        data[i].finalresult.data.uniqueId,
+        data[i].finalresult.data["Document Number"]
+      );
+    }
     if (!data) return res.status(500).json({ error: "server query error!" });
 
     const matchPCaseData: any = [];
@@ -115,48 +200,25 @@ export const dynamicReportGenerateController: RequestHandler = async (
     let isKCaseTrue: boolean = false;
 
     for (let i = 0; i < data?.length; i++) {
-      const first = removeCommas(data[i]?.data["Closing Balance"]);
-      const second = removeCommas(data[i]?.result?.data["Closing Balance"]);
-      // FIND THE DIFFERENCE.
-      const diff = +second - +first;
-      if (diff && diff > 1) {
-        // IF DIFFERENCE GREATER THEN 1.
-
-        // GET 3RD COLLECTION
-        const lastCollection = await getModelByString(`${email}@complete`);
-        if (lastCollection) {
-          // SEARCH THE INVOICE NUMBER WHICH IS FIND IN 2ND COLLECTION
-          const invoiceNumber = data[i]?.result?.data["Invoice Number"];
-          // IF THAT'S 2ND COLLECTION INVOICE NUMBER PRESENT INTO 3RD COLLECTION. GET THAT'S INVOICE NUMBER DATA.
-          const lastData = await (lastCollection as mongoose.Model<any>).find({
-            "data.Invoice Number": invoiceNumber,
-            uniqueId: recentIds?.detailsId,
-          });
-
-          // IF DATA THEN GET INTO 3RD COLLECTION DOCUMENT NUMBER. AND CHECK DOCUMENT NUMBER TYPE. IF THAT'S START OR END OR CONTAINS WITH PID OR TDS THEN THAT'S STORE INTO DIFFERENT COLLECTION.
-          for (let z = 0; z < lastData?.length; z++) {
-            //  MATCHING THE DOCUMENT TYPE.
-            const documentNumber = lastData[z]?.data["Document Number"];
-            if (
-              documentNumber &&
-              (documentNumber.startsWith("PID") ||
-                documentNumber.endsWith("PID") ||
-                documentNumber.includes("PID"))
-            ) {
-              isPCaseTrue = true;
-              matchPCaseData.push(lastData[i]);
-            } else if (
-              documentNumber &&
-              (documentNumber.startsWith("TDS") ||
-                documentNumber.endsWith("TDS") ||
-                documentNumber.includes("TDS"))
-            ) {
-              isKCaseTrue = true;
-              console.log("K", lastData[i]);
-              matchKCaseData.push(lastData[i]);
-            }
-          }
-        }
+      //  MATCHING THE DOCUMENT TYPE.
+      const documentNumber = data[i].finalresult.data["Document Number"];
+      if (
+        documentNumber &&
+        (documentNumber.startsWith("PID") ||
+          documentNumber.endsWith("PID") ||
+          documentNumber.includes("PID"))
+      ) {
+        isPCaseTrue = true;
+        matchPCaseData.push(data[i]?.finalresult);
+      } else if (
+        documentNumber &&
+        (documentNumber.startsWith("TDS") ||
+          documentNumber.endsWith("TDS") ||
+          documentNumber.includes("TDS"))
+      ) {
+        isKCaseTrue = true;
+        console.log("K", data[i]?.finalresult);
+        matchKCaseData.push(data[i]?.finalresult);
       }
     }
 
