@@ -55,7 +55,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
   const Collection: any = await getModelByString(`${email}@masterOpen`);
 
   const vendorCollection: any = await getModelByString(`${email}@vendorOpen`);
-  // const lastCollection: any = await getModelByString(`${email}@complete`);
+  const lastCollection: any = await getModelByString(`${email}@complete`);
 
   console.log({ Collection });
   console.log({ vendorCollection });
@@ -264,9 +264,50 @@ export const dynamicReportGenerateController: RequestHandler = async (
       //     "finalresult.uniqueId": recentIds?.detailsId,
       //   },
       // },
+      {
+        $lookup: {
+          from: lastCollection.collection.name,
+          let: { localField: "$data.Invoice Number" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $regexMatch: {
+                        input: "$data.Invoice Number",
+                        regex: "$$localField",
+                      },
+                    },
+                    {
+                      $regexMatch: {
+                        input: "$$localField",
+                        regex: "$data.Invoice Number",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "finalresult",
+        },
+      },
+      {
+        $unwind: {
+          path: "$finalresult",
+        },
+      },
+      {
+        $match: {
+          "finalresult.uniqueId": recentIds?.detailsId,
+        },
+      },
     ]);
 
     if (!data) return res.status(500).json({ error: "server query error!" });
+
+    res.send(data);
 
     const matchPCaseData: any = [];
 
