@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const yourSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    uniqueId: { type: String, required: true },
+    // uniqueId: { type: String, required: true },
     "Due Date": { type: String, required: true },
     "Company Code": { type: String, required: true },
     "Credit Amount(INR)": { type: String, required: true },
