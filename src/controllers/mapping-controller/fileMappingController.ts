@@ -98,7 +98,7 @@ export const masterFileMappedGetDataController: RequestHandler = async (
   try {
     const mappedData = await masterMapping
       .find({ user: _id })
-      .select({ __v: 0, updatedAt: 0, createdAt: 0 });
+      .select({ user: 0, __v: 0, updatedAt: 0, createdAt: 0 });
 
     return res.status(200).json({ data: mappedData });
   } catch (error) {
@@ -201,7 +201,7 @@ export const vendorFileMappedGetDataController: RequestHandler = async (
   try {
     const mappedData = await vendorMapping
       .find({ user: _id })
-      .select({ __v: 0, updatedAt: 0, createdAt: 0 });
+      .select({ user: 0, __v: 0, updatedAt: 0, createdAt: 0 });
 
     return res.status(200).json({ data: mappedData });
   } catch (error) {
@@ -307,7 +307,7 @@ export const completeFileMappedGetDataController: RequestHandler = async (
   try {
     const mappedData = await completeMapping
       .find({ user: _id })
-      .select({ __v: 0, updatedAt: 0, createdAt: 0 });
+      .select({ user: 0, __v: 0, updatedAt: 0, createdAt: 0 });
 
     return res.status(200).json({ data: mappedData });
   } catch (error) {
