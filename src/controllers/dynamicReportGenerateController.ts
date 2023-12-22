@@ -6,6 +6,7 @@ import PCase from "../models/cases/PCase.model";
 import KCase from "../models/cases/KCase.model";
 import LCase from "../models/cases/LCase.model";
 import MCase from "../models/cases/MCase.model";
+import FCase from "../models/cases/FCase.model";
 
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
@@ -45,7 +46,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
   if (!vendorName)
     return res.status(404).json({ error: "missing required fields!" });
 
-  // return res.send(documentType);
   const token = (req as any)?.token;
   if (!token)
     return res.status(401).json({ error: "you are not authenticated" });
@@ -59,9 +59,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
   const vendorCollection: any = await getModelByString(`${email}@vendorOpen`);
   const lastCollection: any = await getModelByString(`${email}@complete`);
-
-  // console.log({ Collection });
-  // console.log({ vendorCollection });
 
   if (!Collection || !vendorCollection)
     return res.status(500).json({ error: "schema error!" });
@@ -312,7 +309,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     if (!data) return res.status(500).json({ error: "server query error!" });
 
-    // res.send(data);
     // <---------------------------- CASE L AND M  AGGREGATION ---------------------------->
 
     const CaseLAndM = await vendorCollection.aggregate([
@@ -377,7 +373,38 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
-    // res.send(CaseLAndM);
+    // <---------------------------- CASE F AGGREGATION ---------------------------->
+
+    const CaseF = await Collection.aggregate([
+      {
+        $match: {
+          "data.Vendor Name": vendorName,
+          uniqueId: recentIds?.masterId,
+        },
+      },
+      {
+        $lookup: {
+          from: vendorCollection.collection.name,
+          localField: "data.Invoice Number",
+          foreignField: "data.Invoice Number",
+          as: "result",
+        },
+      },
+      {
+        $match: {
+          result: {
+            $eq: [],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          result: 0,
+          // masterCollection:"$$ROOT",
+        },
+      },
+    ]);
 
     // <---------------------------- CASE P AND K ---------------------------->
     const matchPCaseData: any = [];
@@ -545,9 +572,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     // TEST K CASE - IF K CASE SUCCESS.
     const kCaseDataFlat = await matchKCaseData.flat();
-    // console.log({ kCaseDataFlat });
     // STORE INTO THE P CASE COLLECTION
-    // console.log({ kCaseDataFlat, isKCaseTrue });
     if (isPCaseTrue) {
       let idx: number = 1;
       for (const item of pCaseDataFlat) {
@@ -609,7 +634,8 @@ export const dynamicReportGenerateController: RequestHandler = async (
     for (let i = 0; i < CaseLAndM?.length; i++) {
       if (
         CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
-        CaseLAndM[i].combinedData.A.ABMatch?.length == 0
+        CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
+        CaseLAndM[i].combinedData.A.data["Closing Balance"] < 0
       ) {
         isMCaseTrue = true;
         const filteredData = {
@@ -620,7 +646,8 @@ export const dynamicReportGenerateController: RequestHandler = async (
         matchMCaseData.push(filteredData);
       } else if (
         CaseLAndM[i].combinedData.A.ACMatch?.length != 0 &&
-        CaseLAndM[i].combinedData.A.ABMatch?.length == 0
+        CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
+        CaseLAndM[i].combinedData.A.data["Closing Balance"] >= 0
       ) {
         isLCaseTrue = true;
         matchLCaseData.push(...CaseLAndM[i].combinedData.A.ACMatch);
@@ -629,15 +656,12 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     const LCaseDataFlat = await matchLCaseData.flat();
     const MCaseDataFlat = await matchMCaseData.flat();
-    // res.send(LCaseDataFlat);
-    // res.send(MCaseDataFlat);
+
     // STORE INTO K CASE COLLECTION.
     if (isLCaseTrue) {
       let idx: number = 1;
       for (const item of LCaseDataFlat) {
-        // console.log(item.data);
         if (item?.data["Debit Amount(INR)"]) {
-          // console.log("HII");
           const LCaseInstance = await new LCase({
             user: new mongoose.Types.ObjectId(_id),
             uniqueId: recentIds?.masterId,
@@ -660,7 +684,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     // STORE INTO K CASE COLLECTION.
     if (isMCaseTrue) {
-      // console.log("HI");
       let idx: number = 1;
       for (const item of MCaseDataFlat) {
         console.log(item);
@@ -684,8 +707,37 @@ export const dynamicReportGenerateController: RequestHandler = async (
         // }
       }
     }
-    // res.send(matchMCaseData);
-    // res.send(matchLCaseData);
+
+    // res.send(CaseF);
+    // <---------------------------- CASE F DATABASE  ---------------------------->
+    if (CaseF) {
+      let idx: number = 1;
+      for (const item of CaseF) {
+        console.log(item);
+        const FCaseInstance = await new FCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+          "Invoice Date": item?.data["Invoice Date"],
+          "Payment Date": item?.data["Payment Date"],
+          "Payment Document": item?.data["Payment Document"],
+          "Grn Number": item?.data["Grn Number"],
+        });
+        try {
+          await FCaseInstance.save();
+        } catch (error) {
+          console.error(`Error saving data: ${error}`);
+        }
+      }
+    }
+
     return res.status(200).json({
       message: "ok",
       data: data,
