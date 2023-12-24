@@ -2,11 +2,13 @@ import express from "express";
 import {
   completeFileMappedGetDataController,
   completeFileMappingController,
+  completeFileUpdateMappingController,
   masterFileMappedGetDataController,
   masterFileMappingController,
   masterFileUpdateMappingController,
   vendorFileMappedGetDataController,
   vendorFileMappingController,
+  vendorFileUpdateMappingController,
 } from "../../controllers/mapping-controller/fileMappingController";
 import { restrictTo } from "../../middlewares/authMiddleware";
 import { authenticateToken } from "../../middlewares/authenticateToken";
@@ -51,7 +53,7 @@ router.put(
   "/vendor-mapping/:id",
   authenticateToken,
   restrictTo(["USER"]),
-  vendorFileMappingController
+  vendorFileUpdateMappingController
 );
 
 // VENDOR FILE GET ROUTE.
@@ -75,7 +77,7 @@ router.put(
   "/complete-mapping/:id",
   authenticateToken,
   restrictTo(["USER"]),
-  completeFileMappingController
+  completeFileUpdateMappingController
 );
 //  COMPLETE FILE GET ROUTE.
 router.get(

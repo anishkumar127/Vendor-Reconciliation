@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { yourSchema } from "../models/dynamic-schema/dynamicSchema";
+import { yourSchemaComplete } from "../models/dynamic-schema/completeDynamicSchema";
 import { v4 as uuidv4 } from "uuid";
 import { RequestHandler } from "express";
 import { getUser } from "../services/auth";
@@ -23,7 +23,7 @@ export const completeDetailsFileUploadController: RequestHandler = async (
 
   let YourModel;
   try {
-    YourModel = mongoose.model(`${email}@complete`, yourSchema);
+    YourModel = mongoose.model(`${email}@complete`, yourSchemaComplete);
   } catch (error) {
     console.log(error);
     YourModel = mongoose.model(`${email}@complete`);
@@ -39,26 +39,31 @@ export const completeDetailsFileUploadController: RequestHandler = async (
         data: item,
       }))
     );
-    // UPDATE THE RECENT IDS.
-    const options = { new: true, upsert: true };
-    const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
-      { user: _id, masterId: { $exists: true } },
-      {
-        $set: {
-          detailsId: uniqueId,
+    try {
+      // UPDATE THE RECENT IDS.
+      const options = { new: true, upsert: true };
+      const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
+        { user: _id, masterId: { $exists: true } },
+        {
+          $set: {
+            detailsId: uniqueId,
+          },
         },
-      },
-      options
-    );
+        options
+      );
 
-    if (!recentUpdatedIdMaster) {
-      await RecentIds.create({
-        user: _id,
-        detailsId: uniqueId,
-      });
+      if (!recentUpdatedIdMaster) {
+        await RecentIds.create({
+          user: _id,
+          detailsId: uniqueId,
+        });
+      }
+    } catch (error) {
+      return res.status(500).json(error);
     }
   } catch (error) {
     console.log(error);
+    return res.status(500).json(error);
   }
   return res.status(201).json({
     message: "Documents created successfully",

@@ -1,7 +1,7 @@
 import { Request, RequestHandler, Response } from "express";
 import { User } from "../models/user.model";
 import { getUser } from "../services/auth";
-import { yourSchema } from "../models/dynamic-schema/dynamicSchema";
+import { yourSchemaMaster } from "../models/dynamic-schema/masterDynamicSchema";
 import { RecentIds } from "../models/mixed/RecentIds.model";
 import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
@@ -40,7 +40,7 @@ export const masterFileUploadController: RequestHandler = async (req, res) => {
 
   let YourModel;
   try {
-    YourModel = mongoose.model(`${email}@masterOpen`, yourSchema);
+    YourModel = mongoose.model(`${email}@masterOpen`, yourSchemaMaster);
   } catch (error) {
     console.log(error);
     YourModel = mongoose.model(`${email}@masterOpen`);
