@@ -58,12 +58,30 @@ export const completeDetailsFileUploadController: RequestHandler = async (
           detailsId: uniqueId,
         });
       }
-    } catch (error) {
-      return res.status(500).json(error);
+    } catch (error: any) {
+      // return res.status(500).json(error);
+      if (error.name === "ValidationError") {
+        // Handle validation error
+        return res
+          .status(400)
+          .json({ success: false, error: error.errors.data });
+      } else {
+        return res
+          .status(500)
+          .json({ success: false, error: "Internal server error" });
+      }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
-    return res.status(500).json(error);
+    // return res.status(500).json(error);
+    if (error.name === "ValidationError") {
+      // Handle validation error
+      return res.status(400).json({ success: false, error: error.errors.data });
+    } else {
+      return res
+        .status(500)
+        .json({ success: false, error: "Internal server error" });
+    }
   }
   return res.status(201).json({
     message: "Documents created successfully",
