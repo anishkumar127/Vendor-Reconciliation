@@ -76,12 +76,30 @@ export const masterFileUploadController: RequestHandler = async (req, res) => {
           masterId: uniqueId,
         });
       }
-    } catch (error) {
-      return res.status(500).json({ error });
+    } catch (error: any) {
+      // return res.status(500).json({ error });
+      if (error.name === "ValidationError") {
+        // Handle validation error
+        res.status(400).json({ success: false, error: error.message });
+      } else {
+        // Handle other types of errors
+        console.error(error);
+        res
+          .status(500)
+          .json({ success: false, error: "Internal server error" });
+      }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
-    return res.status(500).json({ error });
+    // return res.status(500).json({ error });
+    if (error.name === "ValidationError") {
+      // Handle validation error
+      res.status(400).json({ success: false, error: error.message });
+    } else {
+      // Handle other types of errors
+      console.error(error);
+      res.status(500).json({ success: false, error: "Internal server error" });
+    }
   }
 
   return res.status(201).json({
