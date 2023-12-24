@@ -91,13 +91,11 @@ export const masterFileUploadController: RequestHandler = async (req, res) => {
     }
   } catch (error: any) {
     console.log(error);
-    // return res.status(500).json({ error });
+    // console.log(error.errors.data);
     if (error.name === "ValidationError") {
       // Handle validation error
-      res.status(400).json({ success: false, error: error.message });
+      res.status(400).json({ success: false, error: error.errors.data });
     } else {
-      // Handle other types of errors
-      console.error(error);
       res.status(500).json({ success: false, error: "Internal server error" });
     }
   }
