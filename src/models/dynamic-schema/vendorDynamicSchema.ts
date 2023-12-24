@@ -11,14 +11,14 @@ export const yourSchemaVendor = new mongoose.Schema(
 );
 
 const requiredFields = [
-  "Business Partner",
-  "Business Partner Name",
-  "Closing Balance",
-  "Invoice Amount",
-  "Currency",
-  "Due Date",
-  "Document Date",
-  "Document Number",
+  // "Business Partner",
+  // "Business Partner Name",
+  // "Closing Balance",
+  // "Invoice Amount",
+  // "Currency",
+  // "Due Date",
+  // "Document Date",
+  // "Document Number",
   "Invoice Number",
 ];
 
