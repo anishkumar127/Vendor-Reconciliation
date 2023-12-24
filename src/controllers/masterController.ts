@@ -77,14 +77,13 @@ export const masterFileUploadController: RequestHandler = async (req, res) => {
         });
       }
     } catch (error: any) {
-      // return res.status(500).json({ error });
       if (error.name === "ValidationError") {
         // Handle validation error
-        res.status(400).json({ success: false, error: error.message });
+        return res
+          .status(400)
+          .json({ success: false, error: error.errors.data });
       } else {
-        // Handle other types of errors
-        console.error(error);
-        res
+        return res
           .status(500)
           .json({ success: false, error: "Internal server error" });
       }
@@ -94,9 +93,11 @@ export const masterFileUploadController: RequestHandler = async (req, res) => {
     // console.log(error.errors.data);
     if (error.name === "ValidationError") {
       // Handle validation error
-      res.status(400).json({ success: false, error: error.errors.data });
+      return res.status(400).json({ success: false, error: error.errors.data });
     } else {
-      res.status(500).json({ success: false, error: "Internal server error" });
+      return res
+        .status(500)
+        .json({ success: false, error: "Internal server error" });
     }
   }
 
