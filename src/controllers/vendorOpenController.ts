@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-import { yourSchema } from "../models/dynamic-schema/dynamicSchema";
+import { yourSchemaVendor } from "../models/dynamic-schema/vendorDynamicSchema";
 import { RecentIds } from "../models/mixed/RecentIds.model";
 import { getUser } from "../services/auth";
 
@@ -24,7 +24,7 @@ export const vendorFileUploadController: RequestHandler = async (req, res) => {
 
   let YourModel;
   try {
-    YourModel = mongoose.model(`${email}@vendorOpen`, yourSchema);
+    YourModel = mongoose.model(`${email}@vendorOpen`, yourSchemaVendor);
   } catch (error) {
     console.log(error);
     YourModel = mongoose.model(`${email}@vendorOpen`);
@@ -40,26 +40,31 @@ export const vendorFileUploadController: RequestHandler = async (req, res) => {
         data: item,
       }))
     );
-    // UPDATE THE RECENT IDS.
-    const options = { new: true, upsert: true };
-    const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
-      { user: _id, masterId: { $exists: true } }, // Update documents where user is the same and masterId field exists
-      {
-        $set: {
-          vendorId: uniqueId,
+    try {
+      // UPDATE THE RECENT IDS.
+      const options = { new: true, upsert: true };
+      const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
+        { user: _id, masterId: { $exists: true } }, // Update documents where user is the same and masterId field exists
+        {
+          $set: {
+            vendorId: uniqueId,
+          },
         },
-      },
-      options
-    );
+        options
+      );
 
-    if (!recentUpdatedIdMaster) {
-      await RecentIds.create({
-        user: _id,
-        vendorId: uniqueId,
-      });
+      if (!recentUpdatedIdMaster) {
+        await RecentIds.create({
+          user: _id,
+          vendorId: uniqueId,
+        });
+      }
+    } catch (error) {
+      return res.status(500).json(error);
     }
   } catch (error) {
     console.log(error);
+    return res.status(500).json(error);
   }
 
   return res.status(201).json({
