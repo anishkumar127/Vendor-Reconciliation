@@ -3,6 +3,9 @@ import {
   completeFileMappedGetDataController,
   completeFileMappingController,
   completeFileUpdateMappingController,
+  deleteCompleteMappingController,
+  deleteMasterMappingController,
+  deleteVendorMappingController,
   masterFileMappedGetDataController,
   masterFileMappingController,
   masterFileUpdateMappingController,
@@ -86,4 +89,28 @@ router.get(
   restrictTo(["USER"]),
   completeFileMappedGetDataController
 );
+
+// <-------------------------------------- DELETE ROUTE ------------------------------------>
+router
+  .route("/master-mapping/:id")
+  .delete(
+    authenticateToken,
+    restrictTo(["USER"]),
+    deleteMasterMappingController
+  );
+router
+  .route("/vendor-mapping/:id")
+  .delete(
+    authenticateToken,
+    restrictTo(["USER"]),
+    deleteVendorMappingController
+  );
+router
+  .route("/complete-mapping/:id")
+  .delete(
+    authenticateToken,
+    restrictTo(["USER"]),
+    deleteCompleteMappingController
+  );
+
 export default router;

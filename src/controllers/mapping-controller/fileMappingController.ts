@@ -314,3 +314,114 @@ export const completeFileMappedGetDataController: RequestHandler = async (
     return res.status(404).json({ error: error });
   }
 };
+
+// <---------------------------- DELETE CONTROLLERS ---------------------->
+
+// <---------------------------- MASTER MAPPING DELETE CONTROLLER ---------------------->
+
+export const deleteMasterMappingController: RequestHandler = async (
+  req,
+  res
+) => {
+  const deleteMappingID = req.params.id;
+
+  if (!deleteMappingID)
+    return res.status(400).json({ error: "missing id to be delete!" });
+  const token = (req as any)?.token;
+
+  if (!token) {
+    return res.status(401).json({ error: "You are not authenticated" });
+  }
+
+  const { _id }: any = await getUser(token);
+
+  if (!_id) {
+    return res.status(401).json({ error: "User not authenticated!" });
+  }
+
+  try {
+    const deletedMapping = await masterMapping.findByIdAndDelete({
+      _id: deleteMappingID,
+      user: _id,
+    });
+
+    if (!deletedMapping) {
+      return res.status(404).json({ error: "Mapping not found" });
+    }
+
+    return res.status(200).json({ message: "Mapping deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// <---------------------------- VENDOR MAPPING DELETE CONTROLLER ---------------------->
+export const deleteVendorMappingController: RequestHandler = async (
+  req,
+  res
+) => {
+  const deleteMappingID = req.params.id;
+  if (!deleteMappingID)
+    return res.status(400).json({ error: "missing id to be delete!" });
+  const token = (req as any)?.token;
+
+  if (!token) {
+    return res.status(401).json({ error: "You are not authenticated" });
+  }
+
+  const { _id }: any = await getUser(token);
+
+  if (!_id) {
+    return res.status(401).json({ error: "User not authenticated!" });
+  }
+
+  try {
+    const deletedMapping = await vendorMapping.findByIdAndDelete({
+      _id: deleteMappingID,
+      user: _id,
+    });
+
+    if (!deletedMapping) {
+      return res.status(404).json({ error: "Mapping not found" });
+    }
+
+    return res.status(200).json({ message: "Mapping deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+// <---------------------------- COMPLETE MAPPING DELETE CONTROLLER ---------------------->
+export const deleteCompleteMappingController: RequestHandler = async (
+  req,
+  res
+) => {
+  const deleteMappingID = req.params.id;
+  if (!deleteMappingID)
+    return res.status(400).json({ error: "missing id to be delete!" });
+  const token = (req as any)?.token;
+
+  if (!token) {
+    return res.status(401).json({ error: "You are not authenticated" });
+  }
+
+  const { _id }: any = await getUser(token);
+
+  if (!_id) {
+    return res.status(401).json({ error: "User not authenticated!" });
+  }
+
+  try {
+    const deletedMapping = await completeMapping.findByIdAndDelete({
+      _id: deleteMappingID,
+      user: _id,
+    });
+
+    if (!deletedMapping) {
+      return res.status(404).json({ error: "Mapping not found" });
+    }
+
+    return res.status(200).json({ message: "Mapping deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
