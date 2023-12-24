@@ -58,26 +58,30 @@ export const masterFileUploadController: RequestHandler = async (req, res) => {
     );
 
     // UPDATE THE RECENT IDS.
-    const options = { new: true, upsert: true };
-    const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
-      { user: _id, masterId: { $exists: true } }, // Update documents where user is the same and masterId field exists
-      {
-        $set: {
-          masterId: uniqueId,
+    try {
+      const options = { new: true, upsert: true };
+      const recentUpdatedIdMaster = await RecentIds.findOneAndUpdate(
+        { user: _id, masterId: { $exists: true } }, // Update documents where user is the same and masterId field exists
+        {
+          $set: {
+            masterId: uniqueId,
+          },
         },
-      },
-      options
-    );
+        options
+      );
 
-    if (!recentUpdatedIdMaster) {
-      await RecentIds.create({
-        user: _id,
-        masterId: uniqueId,
-      });
+      if (!recentUpdatedIdMaster) {
+        await RecentIds.create({
+          user: _id,
+          masterId: uniqueId,
+        });
+      }
+    } catch (error) {
+      return res.status(500).json(error);
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ error });
+    return res.status(500).json(error);
   }
 
   return res.status(201).json({
