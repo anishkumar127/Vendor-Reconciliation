@@ -5,6 +5,7 @@ import { RecentIds } from "../../models/mixed/RecentIds.model";
 import KCase from "../../models/cases/KCase.model";
 import LCase from "../../models/cases/LCase.model";
 import MCase from "../../models/cases/MCase.model";
+import FCase from "../../models/cases/FCase.model";
 // export const generateCasePController = async (
 //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 //   req: Request,
@@ -242,5 +243,44 @@ export const getMCaseGeneratedReport: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error("Error retrieving MCase report:", error);
     return res.status(500).json({ error: "Failed to retrieve MCase report" });
+  }
+};
+
+// F CASE
+export const getFCaseGeneratedReport: RequestHandler = async (req, res) => {
+  const token = (req as any)?.token;
+  if (!token)
+    return res.status(401).json({ error: "you are not authenticated" });
+
+  const { _id, email }: any = await getUser(token);
+
+  if (!_id || !email)
+    return res.status(401).json({ error: "user not authenticated!" });
+
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(404).json({ error: "no recent ids present." });
+  console.log(recentIds.masterId);
+  try {
+    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+    const fCaseReport = await FCase.find({
+      user: _id,
+      uniqueId: recentIds?.masterId,
+    }).select({
+      updatedAt: 0,
+      createdAt: 0,
+      user: 0,
+      _id: 0,
+      __v: 0,
+      uniqueId: 0,
+    });
+
+    return res.status(200).json({ data: fCaseReport });
+  } catch (error) {
+    console.error("Error retrieving FCase report:", error);
+    return res.status(500).json({ error: "Failed to retrieve FCase report" });
   }
 };
