@@ -11,15 +11,15 @@ export const yourSchemaMaster = new mongoose.Schema(
 );
 
 const requiredFields = [
-  "Vendor",
-  "Vendor Name",
-  "Document Number",
+  // "Vendor",
+  // "Vendor Name",
+  // "Document Number",
   "Invoice Number",
-  "Closing Balance",
-  "Invoice Amount",
-  "Currency",
-  "Due Date",
-  "Document Date",
+  // "Closing Balance",
+  // "Invoice Amount",
+  // "Currency",
+  // "Due Date",
+  // "Document Date",
 ];
 
 yourSchemaMaster.pre("validate", function (next) {

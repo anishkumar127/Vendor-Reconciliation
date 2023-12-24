@@ -11,17 +11,17 @@ export const yourSchemaComplete = new mongoose.Schema(
 );
 
 const requiredFields = [
-  "Due Date",
-  "Company Code",
-  "Credit Amount(INR)",
-  "Debit Amount(INR)",
-  "Cheque Rtgs Neft",
-  "Payment Document",
-  "Reference",
-  "Grn Number",
-  "Invoice Date",
-  "Document Date",
-  "Document Number",
+  // "Due Date",
+  // "Company Code",
+  // "Credit Amount(INR)",
+  // "Debit Amount(INR)",
+  // "Cheque Rtgs Neft",
+  // "Payment Document",
+  // "Reference",
+  // "Grn Number",
+  // "Invoice Date",
+  // "Document Date",
+  // "Document Number",
   "Invoice Number",
 ];
 
