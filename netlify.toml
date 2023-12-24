@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"  # Adjust this based on your build script
+  publish = "dist"  # Adjust this based on your output directory
+
+[dev]
+  command = "npm run start"  # Adjust this based on your start script
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
