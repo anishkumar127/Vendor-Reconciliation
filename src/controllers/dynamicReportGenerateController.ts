@@ -71,121 +71,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
   if (!recentIds)
     return res.status(404).json({ error: "no recent ids present." });
 
-  // console.log({ _id });
-
-  // console.log({ recentIds });
-
   try {
-    // const data = await Collection.aggregate([
-    //   {
-    //     $match: {
-    //       "data.Vendor Name": vendorName,
-    //       uniqueId: recentIds?.masterId,
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: vendorCollection.collection.name,
-    //       localField: "data.Invoice Number",
-    //       foreignField: "data.Invoice Number",
-    //       as: "result",
-    //     },
-    //   },
-    //   {
-    //     $unwind: {
-    //       path: "$result",
-    //     },
-    //   },
-    //   {
-    //     $match: {
-    //       "result.uniqueId": recentIds?.vendorId,
-    //     },
-    //   },
-    // ]);
-
-    // working state
-    // const data = await Collection.aggregate([
-    //   {
-    //     $match: {
-    //       "data.Vendor Name": vendorName,
-    //       uniqueId: recentIds?.masterId,
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: vendorCollection.collection.name,
-    //       localField: "data.Invoice Number",
-    //       foreignField: "data.Invoice Number",
-    //       as: "result",
-    //     },
-    //   },
-    //   {
-    //     $unwind: {
-    //       path: "$result",
-    //     },
-    //   },
-    //   {
-    //     $match: {
-    //       "result.uniqueId": recentIds?.vendorId,
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       data: 1,
-    //       result: 1,
-    //       first: {
-    //         $toDouble: {
-    //           $replaceAll: {
-    //             input: "$data.Closing Balance",
-    //             find: ",",
-    //             replacement: "",
-    //           },
-    //         },
-    //       },
-    //       second: {
-    //         $toDouble: {
-    //           $replaceAll: {
-    //             input: "$result.data.Closing Balance",
-    //             find: ",",
-    //             replacement: "",
-    //           },
-    //         },
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       data: 1,
-    //       result: 1,
-    //       diff: { $subtract: ["$second", "$first"] },
-    //     },
-    //   },
-    //   {
-    //     $match: {
-    //       diff: { $gt: 1 },
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: lastCollection.collection.name,
-    //       localField: "data.Invoice Number",
-    //       foreignField: "data.Invoice Number",
-    //       as: "finalresult",
-    //     },
-    //   },
-    //   {
-    //     $unwind: {
-    //       path: "$finalresult",
-    //     },
-    //   },
-    //   {
-    //     $match: {
-    //       "finalresult.uniqueId": recentIds?.detailsId,
-    //     },
-    //   },
-    // ]);
-
-    // test 2
     // <---------------------------- CASE P AND K AGGREGATION ---------------------------->
 
     const data = await Collection.aggregate([
@@ -249,24 +135,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
           diff: { $gt: 1 },
         },
       },
-      // {
-      //   $lookup: {
-      //     from: lastCollection.collection.name,
-      //     localField: "data.Invoice Number",
-      //     foreignField: "data.Invoice Number",
-      //     as: "finalresult",
-      //   },
-      // },
-      // {
-      //   $unwind: {
-      //     path: "$finalresult",
-      //   },
-      // },
-      // {
-      //   $match: {
-      //     "finalresult.uniqueId": recentIds?.detailsId,
-      //   },
-      // },
       {
         $lookup: {
           from: lastCollection.collection.name,
@@ -402,7 +270,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
         $project: {
           _id: 0,
           result: 0,
-          // masterCollection:"$$ROOT",
         },
       },
     ]);
@@ -520,38 +387,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
           ],
         },
       },
-
-      //  merging the two field.
-      // {
-      //   $addFields: {
-      //     mergedData: {
-      //       $mergeObjects: ["$finalresult","seonc filed"],
-      //     },
-      //   },
-      // },
-      // {
-      //   $replaceRoot: { newRoot: "$mergedData" },
-      // },
       {
         $replaceRoot: { newRoot: "$finalresult" },
       },
-
-      // {
-      //   $project: {
-      //     "finalresult.data.Payment Document": 1,
-      //   },
-      // },
-      // {
-      //   $group: {
-      //     // _id: "$finalresult.data.Payment Document",
-      //     _id: null,
-      //     count: {
-      //       $sum: 1,
-      //     },
-      //   },
-      // },
     ]);
-    // res.send({ GCaseData });
     // <---------------------------- CASE M INVOICE EMPTY ---------------------------->
     const MCaseInvoiceEmpty = await vendorCollection.aggregate([
       [
@@ -615,144 +454,12 @@ export const dynamicReportGenerateController: RequestHandler = async (
         },
       ],
     ]);
-    // res.send(LCaseInvoiceEmpty);
     // <---------------------------- CASE P AND K ---------------------------->
     const matchPCaseData: any = [];
 
     const matchKCaseData: any = [];
     let isPCaseTrue: boolean = false;
     let isKCaseTrue: boolean = false;
-
-    // res.send(data);
-
-    // BRUTE FORCE. WORKING - IN THIS THE INCLUDE METHOD TYPE WORKING.
-    // for (let i = 0; i < data?.length; i++) {
-    //   const lastCollection = await getModelByString(`${email}@complete`);
-    //   if (lastCollection) {
-    //     const invoiceNumber = data[i]?.result?.data["Invoice Number"];
-    //     const escapedInvoiceNumber = invoiceNumber.replace(
-    //       /[.*+?^${}()|[\]\\]/g,
-    //       "\\$&"
-    //     );
-    //     // console.log(invoiceNumber, "+", escapedInvoiceNumber);
-    //     const regex = new RegExp(escapedInvoiceNumber, "i");
-    //     const lastData = await (lastCollection as mongoose.Model<any>).find({
-    //       "data.Invoice Number": { $regex: regex },
-    //       uniqueId: recentIds?.detailsId,
-    //     });
-
-    //     // res.send(lastData);
-    //     for (let z = 0; z < lastData?.length; z++) {
-    //       // console.log(lastData[z]?.data["Document Number"]);
-    //       const documentNumber = lastData[z]?.data["Document Number"];
-    //       if (
-    //         documentNumber &&
-    //         (documentNumber.startsWith("PID") ||
-    //           documentNumber.endsWith("PID") ||
-    //           documentNumber.includes("PID"))
-    //       ) {
-    //         isPCaseTrue = true;
-    //         // console.log(lastData[i]);
-    //         matchPCaseData.push(lastData[z]);
-    //       } else if (
-    //         documentNumber &&
-    //         (documentNumber.startsWith("TDS") ||
-    //           documentNumber.endsWith("TDS") ||
-    //           documentNumber.includes("TDS"))
-    //       ) {
-    //         isKCaseTrue = true;
-    //         matchKCaseData.push(lastData[z]);
-    //       }
-    //     }
-    //   }
-    // }
-
-    // data?.forEach(async (item: any) => {
-    //   try {
-    //     const lastCollection = await getModelByString(`${email}@complete`);
-
-    //     if (lastCollection) {
-    //       console.log("HI1");
-    //       const invoiceNumber = item?.result?.data["Invoice Number"];
-
-    //       if (invoiceNumber) {
-    //         console.log("HI2");
-
-    //         const escapedInvoiceNumber = invoiceNumber.replace(
-    //           /[.*+?^${}()|[\]\\]/g,
-    //           "\\$&"
-    //         );
-    //         const regex = new RegExp(escapedInvoiceNumber, "i");
-
-    //         const lastData = await (lastCollection as mongoose.Model<any>).find(
-    //           {
-    //             "data.Invoice Number": { $regex: regex },
-    //             uniqueId: recentIds?.detailsId,
-    //           }
-    //         );
-
-    //         if (lastData && lastData?.length > 0) {
-    //           lastData?.forEach((lastItem) => {
-    //             const documentNumber = lastItem?.data["Document Number"];
-    //             console.log(invoiceNumber, documentNumber);
-
-    //             console.log(documentNumber.includes("PID"));
-    //             if (documentNumber) {
-    //               if (
-    //                 documentNumber.startsWith("PID") ||
-    //                 documentNumber.endsWith("PID") ||
-    //                 documentNumber.includes("PID")
-    //               ) {
-    //                 isPCaseTrue = true;
-    //                 // console.log(lastItem);
-    //                 matchPCaseData.push(lastItem);
-    //               } else if (
-    //                 documentNumber.startsWith("TDS") ||
-    //                 documentNumber.endsWith("TDS") ||
-    //                 documentNumber.includes("TDS")
-    //               ) {
-    //                 isKCaseTrue = true;
-    //                 // console.log("K", lastItem);
-    //                 matchKCaseData.push(lastItem);
-    //               }
-    //             }
-    //           });
-    //         }
-    //       }
-    //     }
-    //   } catch (error) {
-    //     // console.error("Error:", error);
-    //   }
-    // });
-
-    // res.send({ matchKCaseData });
-    // old way working code.
-    // for (let i = 0; i < data?.length; i++) {
-    //   //  MATCHING THE DOCUMENT TYPE.
-    //   const documentNumber = data[i].finalresult.data["Document Number"];
-    //   if (
-    //     documentNumber &&
-    //     (documentNumber.startsWith("PID") ||
-    //       documentNumber.endsWith("PID") ||
-    //       documentNumber.includes("PID"))
-    //   ) {
-    //     isPCaseTrue = true;
-    //     matchPCaseData.push(data[i]?.finalresult);
-    //   } else if (
-    //     documentNumber &&
-    //     (documentNumber.startsWith("TDS") ||
-    //       documentNumber.endsWith("TDS") ||
-    //       documentNumber.includes("TDS"))
-    //   ) {
-    //     isKCaseTrue = true;
-    //     console.log("K", data[i]?.finalresult);
-    //     matchKCaseData.push(data[i]?.finalresult);
-    //   }
-    // }
-
-    // TEST P CASE - IF P CASE SUCCESS.
-
-    // console.log({ matchPCaseData, isPCaseTrue });
 
     //  BACK TO OPTIMAL VIA - ADDED INTO PIPELINE - WHAT ADDED ? - INCLUDES METHOD ON INVOICE NUMBER.
     for (let i = 0; i < data?.length; i++) {
