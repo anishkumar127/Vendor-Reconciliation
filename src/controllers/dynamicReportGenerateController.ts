@@ -552,18 +552,70 @@ export const dynamicReportGenerateController: RequestHandler = async (
       // },
     ]);
     // res.send({ GCaseData });
+    // <---------------------------- CASE M INVOICE EMPTY ---------------------------->
+    const MCaseInvoiceEmpty = await vendorCollection.aggregate([
+      [
+        {
+          $match: {
+            "data.Invoice Number": { $exists: false },
+            $expr: {
+              $gt: [
+                {
+                  $toDouble: {
+                    $replaceAll: {
+                      input: "$data.Closing Balance",
+                      find: ",",
+                      replacement: "",
+                    },
+                  },
+                },
+                0,
+              ],
+            },
+            uniqueId: recentIds?.vendorId,
+          },
+        },
+        // {
+        //   $project: {
+        //     first: {
+        //       $toDouble: {
+        //         $replaceAll: {
+        //           input: "$data.Closing Balance",
+        //           find: ",",
+        //           replacement: "",
+        //         },
+        //       },
+        //     },
+        //   },
+        // },
+      ],
+    ]);
     // <---------------------------- CASE L INVOICE EMPTY ---------------------------->
     const LCaseInvoiceEmpty = await vendorCollection.aggregate([
-      {
-        $match: {
-          "data.Invoice Number": {
-            $exists: false,
+      [
+        {
+          $match: {
+            "data.Invoice Number": { $exists: false },
+            $expr: {
+              $lt: [
+                {
+                  $toDouble: {
+                    $replaceAll: {
+                      input: "$data.Closing Balance",
+                      find: ",",
+                      replacement: "",
+                    },
+                  },
+                },
+                0,
+              ],
+            },
+            uniqueId: recentIds?.vendorId,
           },
-          uniqueId: recentIds?.vendorId,
         },
-      },
+      ],
     ]);
-    res.send(LCaseInvoiceEmpty);
+    // res.send(LCaseInvoiceEmpty);
     // <---------------------------- CASE P AND K ---------------------------->
     const matchPCaseData: any = [];
 
@@ -870,24 +922,41 @@ export const dynamicReportGenerateController: RequestHandler = async (
     if (LCaseInvoiceEmpty) {
       let idx: number = 1;
       for (const item of LCaseInvoiceEmpty) {
-        if (item?.data["Debit Amount(INR)"]) {
-          const LCaseInstance = await new LCase({
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data["Company Code"],
-            "Vendor Code": item?.data["Vendor Code"],
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          });
-          try {
-            await LCaseInstance.save();
-          } catch (error) {
-            console.error(`Error saving data: ${error}`);
-          }
+        // if (item?.data["Debit Amount(INR)"]) {
+        const LCaseInstance = await new LCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+        });
+        try {
+          await LCaseInstance.save();
+        } catch (error) {
+          console.error(`Error saving data: ${error}`);
         }
+        // }
+      }
+    }
+
+    // M CASE INVOICE EMPTY
+    if (MCaseInvoiceEmpty) {
+      let idx: number = 1;
+      for (const item of MCaseInvoiceEmpty) {
+        const MCaseInstance = await new MCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Date": item?.data["Document Date"],
+          // "Invoice Number": item?.data["Invoice Number"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+        });
+        try {
+          await MCaseInstance.save();
+        } catch (error) {
+          console.error(`Error saving data: ${error}`);
+        }
+        // }
       }
     }
 
