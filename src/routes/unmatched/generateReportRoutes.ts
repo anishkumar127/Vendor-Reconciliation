@@ -2,6 +2,7 @@ import express from "express";
 import { authenticateToken } from "../../middlewares/authenticateToken";
 import {
   getFCaseGeneratedReport,
+  getGCaseGeneratedReport,
   getKCaseGeneratedReport,
   getLCaseGeneratedReport,
   getMCaseGeneratedReport,
@@ -20,4 +21,6 @@ router.get("/l-case", authenticateToken, getLCaseGeneratedReport);
 router.get("/m-case", authenticateToken, getMCaseGeneratedReport);
 // F CASE REPORT ROUTE
 router.get("/f-case", authenticateToken, getFCaseGeneratedReport);
+// G CASE REPORT ROUTE
+router.get("/g-case", authenticateToken, getGCaseGeneratedReport);
 export default router;
