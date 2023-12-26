@@ -7,6 +7,7 @@ import KCase from "../models/cases/KCase.model";
 import LCase from "../models/cases/LCase.model";
 import MCase from "../models/cases/MCase.model";
 import FCase from "../models/cases/FCase.model";
+import GCase from "../models/cases/GCase.model";
 
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
@@ -406,6 +407,163 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
+    //  G CASE
+
+    const GCaseData = await Collection.aggregate([
+      {
+        $match: {
+          "data.Vendor Name": vendorName,
+          uniqueId: recentIds?.masterId,
+        },
+      },
+      {
+        $lookup: {
+          as: "result",
+          from: vendorCollection.collection.name,
+          foreignField: "data.Invoice Number",
+          localField: "data.Invoice Number",
+        },
+      },
+      {
+        $unwind: {
+          path: "$result",
+        },
+      },
+      {
+        $match: {
+          "result.uniqueId": recentIds?.vendorId,
+        },
+      },
+      {
+        $project: {
+          data: 1,
+          result: 1,
+          first: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+          second: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$result.data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          data: 1,
+          result: 1,
+          diff: {
+            $subtract: ["$second", "$first"],
+          },
+        },
+      },
+      {
+        $match: {
+          diff: {
+            $gt: 1,
+          },
+        },
+      },
+      {
+        $lookup: {
+          // from: "user@gmail.com@completes",
+          from: lastCollection.collection.name,
+          localField: "result.data.Invoice Number",
+          foreignField: "data.Invoice Number",
+          as: "finalresult",
+        },
+      },
+      {
+        $unwind: {
+          path: "$finalresult",
+        },
+      },
+      {
+        $match: {
+          "finalresult.uniqueId": recentIds?.detailsId,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          finalresult: 1,
+        },
+      },
+      {
+        $match: {
+          $and: [
+            {
+              "finalresult.data.Payment Document": {
+                $ne: "0",
+              },
+            },
+            {
+              "finalresult.data.Payment Document": {
+                $ne: "",
+              },
+            },
+            {
+              "finalresult.data.Payment Document": {
+                $ne: 0,
+              },
+            },
+          ],
+        },
+      },
+
+      //  merging the two field.
+      // {
+      //   $addFields: {
+      //     mergedData: {
+      //       $mergeObjects: ["$finalresult","seonc filed"],
+      //     },
+      //   },
+      // },
+      // {
+      //   $replaceRoot: { newRoot: "$mergedData" },
+      // },
+      {
+        $replaceRoot: { newRoot: "$finalresult" },
+      },
+
+      // {
+      //   $project: {
+      //     "finalresult.data.Payment Document": 1,
+      //   },
+      // },
+      // {
+      //   $group: {
+      //     // _id: "$finalresult.data.Payment Document",
+      //     _id: null,
+      //     count: {
+      //       $sum: 1,
+      //     },
+      //   },
+      // },
+    ]);
+    // res.send({ GCaseData });
+    // <---------------------------- CASE L INVOICE EMPTY ---------------------------->
+    const LCaseInvoiceEmpty = await vendorCollection.aggregate([
+      {
+        $match: {
+          "data.Invoice Number": {
+            $exists: false,
+          },
+          uniqueId: recentIds?.vendorId,
+        },
+      },
+    ]);
+    res.send(LCaseInvoiceEmpty);
     // <---------------------------- CASE P AND K ---------------------------->
     const matchPCaseData: any = [];
 
@@ -657,7 +815,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
     const LCaseDataFlat = await matchLCaseData.flat();
     const MCaseDataFlat = await matchMCaseData.flat();
 
-    // STORE INTO K CASE COLLECTION.
+    // STORE INTO L CASE COLLECTION.
     if (isLCaseTrue) {
       let idx: number = 1;
       for (const item of LCaseDataFlat) {
@@ -682,11 +840,11 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
-    // STORE INTO K CASE COLLECTION.
+    // STORE INTO M CASE COLLECTION.
     if (isMCaseTrue) {
       let idx: number = 1;
       for (const item of MCaseDataFlat) {
-        console.log(item);
+        // console.log(item);
         // if (item?.data["Debit Amount(INR)"]) {
         const MCaseInstance = await new MCase({
           user: new mongoose.Types.ObjectId(_id),
@@ -708,12 +866,37 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
+    // L CASE INVOICE EMPTY
+    if (LCaseInvoiceEmpty) {
+      let idx: number = 1;
+      for (const item of LCaseInvoiceEmpty) {
+        if (item?.data["Debit Amount(INR)"]) {
+          const LCaseInstance = await new LCase({
+            user: new mongoose.Types.ObjectId(_id),
+            uniqueId: recentIds?.masterId,
+            SNO: idx++,
+            "Company Code": item?.data["Company Code"],
+            "Vendor Code": item?.data["Vendor Code"],
+            "Document Number": item?.data["Document Number"],
+            "Document Date": item?.data["Document Date"],
+            "Invoice Number": item?.data["Invoice Number"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          });
+          try {
+            await LCaseInstance.save();
+          } catch (error) {
+            console.error(`Error saving data: ${error}`);
+          }
+        }
+      }
+    }
+
     // res.send(CaseF);
     // <---------------------------- CASE F DATABASE  ---------------------------->
     if (CaseF) {
       let idx: number = 1;
       for (const item of CaseF) {
-        console.log(item);
+        // console.log(item);
         const FCaseInstance = await new FCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -738,6 +921,31 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
+    // <---------------------------- CASE G DATABASE  ---------------------------->
+    if (GCaseData) {
+      let idx: number = 1;
+      for (const item of GCaseData) {
+        const GCaseInstance = await new GCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data?.["Company Code"] || "",
+          "Vendor Code": item?.data?.["Vendor Code"],
+          "Document Number": item?.data?.["Document Number"],
+          "Document Date": item?.data?.["Document Date"],
+          "Invoice Number": item?.data?.["Invoice Number"],
+          "Debit Amount(INR)": item?.data?.["Debit Amount(INR)"],
+          "Invoice Amount": item?.data?.["Invoice Amount"],
+          "Invoice Date": item?.data?.["Invoice Date"],
+          "Grn Number": item?.data?.["Grn Number"],
+        });
+        try {
+          await GCaseInstance.save();
+        } catch (error) {
+          console.error(`Error saving data: ${error}`);
+        }
+      }
+    }
     return res.status(200).json({
       message: "ok",
       data: data,
