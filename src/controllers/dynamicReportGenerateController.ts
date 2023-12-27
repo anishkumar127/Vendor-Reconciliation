@@ -740,7 +740,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
     const LCaseDataFlat = await matchLCaseData.flat();
     const MCaseDataFlat = await matchMCaseData.flat();
     // res.send({ LCaseDataFlat, MCaseDataFlat });
-    res.send(CaseLAndM);
+    // res.send(CaseLAndM);
     // STORE INTO L CASE COLLECTION.
     if (isLCaseTrue) {
       let idx: number = 1;
