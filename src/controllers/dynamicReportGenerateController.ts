@@ -739,30 +739,30 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     const LCaseDataFlat = await matchLCaseData.flat();
     const MCaseDataFlat = await matchMCaseData.flat();
-    // res.send({ LCaseDataFlat, MCaseDataFlat });
+    // res.send({ isLCaseTrue, LCaseDataFlat, MCaseDataFlat });
     // res.send(CaseLAndM);
     // STORE INTO L CASE COLLECTION.
     if (isLCaseTrue) {
       let idx: number = 1;
       for (const item of LCaseDataFlat) {
-        if (item?.data["Debit Amount(INR)"]) {
-          const LCaseInstance = await new LCase({
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data["Company Code"],
-            "Vendor Code": item?.data["Vendor Code"],
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          });
-          try {
-            await LCaseInstance.save();
-          } catch (error) {
-            console.error(`Error saving data: ${error}`);
-          }
+        // if (item?.data["Debit Amount(INR)"]) {
+        const LCaseInstance = await new LCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          Amount: item?.data["Closing Balance"],
+        });
+        try {
+          await LCaseInstance.save();
+        } catch (error) {
+          console.error(`Error saving data: ${error}`);
         }
+        // }
       }
     }
 
@@ -780,7 +780,8 @@ export const dynamicReportGenerateController: RequestHandler = async (
           "Vendor Code": item?.data["Vendor Code"],
           "Document Date": item?.data["Document Date"],
           "Invoice Number": item?.data["Invoice Number"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          // "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          Amount: item?.data["Closing Balance"],
           "Invoice Amount": item?.data["Invoice Amount"],
         });
         try {
