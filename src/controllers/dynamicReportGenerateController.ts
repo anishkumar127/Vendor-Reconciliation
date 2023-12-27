@@ -8,6 +8,7 @@ import LCase from "../models/cases/LCase.model";
 import MCase from "../models/cases/MCase.model";
 import FCase from "../models/cases/FCase.model";
 import GCase from "../models/cases/GCase.model";
+import ACase from "../models/cases/ACase.model";
 
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
@@ -177,6 +178,151 @@ export const dynamicReportGenerateController: RequestHandler = async (
     ]);
 
     if (!data) return res.status(500).json({ error: "server query error!" });
+
+    // <---------------------------- CASE A AGGREGATION ---------------------------->
+    // const ACaseData = await vendorCollection.aggregate([
+    //   {
+    //     $match: {
+    //       uniqueId: recentIds?.vendorId,
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: Collection.collection.name,
+    //       localField: "data.Invoice Number",
+    //       foreignField: "data.Invoice Number",
+    //       as: "result",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       // "data.Vendor Name": vendorName,
+    //       "result.uniqueId": recentIds?.masterId,
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       result: { $eq: [] }, // Filter documents without a match in masteropens
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: lastCollection.collection.name,
+    //       localField: "data.Invoice Number",
+    //       foreignField: "data.Invoice Number",
+    //       as: "resultFromCompletes",
+    //     },
+    //   },
+    //   // {
+    //   //   $match: {
+    //   //     "resultFromCompletes.uniqueId": recentIds?.detailsId,
+    //   //   },
+    //   // },
+    //   {
+    //     $unwind: {
+    //       path: "$resultFromCompletes",
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0, // Exclude _id field if not needed
+    //       resultFromCompletes: 1, // Include the resultFromCompletes field
+    //     },
+    //   },
+    //   //   {
+    //   //     $match: {
+    //   //       "resultFromCompletes.data.Document Date":{
+    //   //         $gte: new Date()
+    //   // }
+    //   //     }
+    //   //   }
+    // ]);
+
+    const ACaseData = await vendorCollection.aggregate([
+      {
+        $match: {
+          uniqueId: recentIds?.vendorId,
+        },
+      },
+      {
+        $lookup: {
+          from: Collection.collection.name,
+          let: {
+            invoiceNumber: "$data.Invoice Number",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $eq: ["$data.Invoice Number", "$$invoiceNumber"],
+                    },
+                    {
+                      $eq: ["$uniqueId", recentIds?.masterId],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "result",
+        },
+      },
+      {
+        $match: {
+          result: {
+            $eq: [],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: lastCollection.collection.name,
+          localField: "data.Invoice Number",
+          foreignField: "data.Invoice Number",
+          as: "resultFromCompletes",
+        },
+      },
+      {
+        $unwind: {
+          path: "$resultFromCompletes",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          resultFromCompletes: 1,
+        },
+      },
+      {
+        $match: {
+          "resultFromCompletes.uniqueId": recentIds?.detailsId,
+        },
+      },
+    ]);
+
+    const ACaseFutureData: any[] = [];
+
+    for (let i = 0; i < ACaseData.length; i++) {
+      console.log(ACaseData[i]?.resultFromCompletes?.data?.["Document Date"]);
+      console.log(
+        new Date(ACaseData[i]?.resultFromCompletes?.data?.["Document Date"])
+      );
+      console.log(new Date());
+      const documentDate = new Date(
+        ACaseData[i]?.resultFromCompletes?.data?.["Document Date"]
+      );
+      const currentDate = new Date();
+
+      if (documentDate > currentDate) {
+        console.log("Document Date is greater than the current date.");
+        ACaseFutureData.push(ACaseData[i]?.resultFromCompletes);
+      }
+      // break;
+    }
+
+    // res.send(ACaseFutureData);
 
     // <---------------------------- CASE L AND M  AGGREGATION ---------------------------->
 
@@ -480,7 +626,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
           documentNumber.includes("TDS"))
       ) {
         isKCaseTrue = true;
-        console.log("K", data[i]?.finalresult);
+        // console.log("K", data[i]?.finalresult);
         matchKCaseData.push(data[i]?.finalresult);
       }
     }
@@ -552,8 +698,9 @@ export const dynamicReportGenerateController: RequestHandler = async (
       if (
         CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
         CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
-        CaseLAndM[i].combinedData.A.data["Closing Balance"] < 0
+        CaseLAndM[i].combinedData.A.data["Closing Balance"] >= 0
       ) {
+        // CREDIT AMOUNT
         isMCaseTrue = true;
         const filteredData = {
           ...CaseLAndM[i].combinedData.A,
@@ -562,10 +709,11 @@ export const dynamicReportGenerateController: RequestHandler = async (
         };
         matchMCaseData.push(filteredData);
       } else if (
-        CaseLAndM[i].combinedData.A.ACMatch?.length != 0 &&
+        CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
         CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
-        CaseLAndM[i].combinedData.A.data["Closing Balance"] >= 0
+        CaseLAndM[i].combinedData.A.data["Closing Balance"] < 0
       ) {
+        // DEBIT AMOUNT
         isLCaseTrue = true;
         matchLCaseData.push(...CaseLAndM[i].combinedData.A.ACMatch);
       }
@@ -668,6 +816,34 @@ export const dynamicReportGenerateController: RequestHandler = async (
     }
 
     // res.send(CaseF);
+    // <---------------------------- CASE A DATABASE  ---------------------------->
+    if (ACaseFutureData) {
+      let idx: number = 1;
+      for (const item of ACaseFutureData) {
+        const ACaseInstance = await new ACase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+          "Invoice Date": item?.data["Invoice Date"],
+          "Payment Date": item?.data["Payment Date"],
+          "Payment Document": item?.data["Payment Document"],
+          "Grn Number": item?.data["Grn Number"],
+        });
+        try {
+          await ACaseInstance.save();
+        } catch (error) {
+          console.error(`Error saving data: ${error}`);
+        }
+      }
+    }
+
     // <---------------------------- CASE F DATABASE  ---------------------------->
     if (CaseF) {
       let idx: number = 1;
