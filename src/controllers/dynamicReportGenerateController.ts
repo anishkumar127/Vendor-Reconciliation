@@ -695,10 +695,22 @@ export const dynamicReportGenerateController: RequestHandler = async (
     let isMCaseTrue: boolean = false;
 
     for (let i = 0; i < CaseLAndM?.length; i++) {
+      const closingBalanceString =
+        CaseLAndM[i].combinedData.A.data["Closing Balance"];
+
+      // Step 1: Remove commas from the string
+      const closingBalanceWithoutCommas = closingBalanceString.replace(
+        /,/g,
+        ""
+      );
+
+      // Step 2: Convert the string to a numeric format
+      const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+
       if (
         CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
         CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
-        CaseLAndM[i].combinedData.A.data["Closing Balance"] >= 0
+        closingBalanceNumeric >= 0
       ) {
         // CREDIT AMOUNT
         isMCaseTrue = true;
@@ -711,17 +723,24 @@ export const dynamicReportGenerateController: RequestHandler = async (
       } else if (
         CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
         CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
-        CaseLAndM[i].combinedData.A.data["Closing Balance"] < 0
+        closingBalanceNumeric < 0
       ) {
         // DEBIT AMOUNT
         isLCaseTrue = true;
-        matchLCaseData.push(...CaseLAndM[i].combinedData.A.ACMatch);
+        // matchLCaseData.push(...CaseLAndM[i].combinedData.A.ACMatch);
+        const filteredData = {
+          ...CaseLAndM[i].combinedData.A,
+          ACMatch: undefined,
+          ABMatch: undefined,
+        };
+        matchLCaseData.push(filteredData);
       }
     }
 
     const LCaseDataFlat = await matchLCaseData.flat();
     const MCaseDataFlat = await matchMCaseData.flat();
-
+    // res.send({ LCaseDataFlat, MCaseDataFlat });
+    res.send(CaseLAndM);
     // STORE INTO L CASE COLLECTION.
     if (isLCaseTrue) {
       let idx: number = 1;
