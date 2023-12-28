@@ -4,9 +4,12 @@ import {
   getACaseGeneratedReport,
   getFCaseGeneratedReport,
   getGCaseGeneratedReport,
+  getICaseGeneratedReport,
   getKCaseGeneratedReport,
   getLCaseGeneratedReport,
+  getLOneCaseGeneratedReport,
   getMCaseGeneratedReport,
+  getMOneCaseGeneratedReport,
   getPCaseGeneratedReport,
 } from "../../controllers/unmatched-controllers/generateCasePController";
 const router = express.Router();
@@ -26,4 +29,12 @@ router.get("/f-case", authenticateToken, getFCaseGeneratedReport);
 router.get("/g-case", authenticateToken, getGCaseGeneratedReport);
 // A CASE REPORT ROUTE
 router.get("/a-case", authenticateToken, getACaseGeneratedReport);
+
+// L1 CASE REPORT ROUTE
+router.get("/l-one-case", authenticateToken, getLOneCaseGeneratedReport);
+// M1 CASE REPORT ROUTE
+router.get("/m-one-case", authenticateToken, getMOneCaseGeneratedReport);
+// I CASE REPORT ROUTE
+router.get("/i-case", authenticateToken, getICaseGeneratedReport);
+
 export default router;
