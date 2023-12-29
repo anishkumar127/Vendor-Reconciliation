@@ -77,6 +77,310 @@ export const dynamicReportGenerateController: RequestHandler = async (
     return res.status(404).json({ error: "no recent ids present." });
 
   try {
+    // test
+
+    const CheckTest = await Collection.aggregate([
+      {
+        $match: {
+          "data.Vendor Name": vendorName,
+          uniqueId: recentIds?.masterId,
+        },
+      },
+      {
+        $match: {
+          "data.Invoice Number": {
+            $exists: true,
+          },
+        },
+      },
+      {
+        $lookup: {
+          as: "result",
+          from: vendorCollection.collection.name,
+          let: {
+            localField: "$data.Invoice Number",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $regexMatch: {
+                        input: "$data.Invoice Number",
+                        regex: "$$localField",
+                      },
+                    },
+                    {
+                      $regexMatch: {
+                        input: "$$localField",
+                        regex: "$data.Invoice Number",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $match: {
+          "result.data.Invoice Number": {
+            $exists: true,
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$result",
+        },
+      },
+      {
+        $match: {
+          "result.uniqueId": recentIds?.vendorId,
+        },
+      },
+      {
+        $project: {
+          data: 1,
+          result: 1,
+          first: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+          second: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$result.data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $lt: ["$first", "$second"],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "user@gmail.com@completes",
+          let: {
+            localField: "$data.Invoice Number",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $regexMatch: {
+                        input: "$data.Invoice Number",
+                        regex: "$$localField",
+                      },
+                    },
+                    {
+                      $regexMatch: {
+                        input: "$$localField",
+                        regex: "$data.Invoice Number",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "finalresult",
+        },
+      },
+      {
+        $unwind: {
+          path: "$finalresult",
+        },
+      },
+      {
+        $match: {
+          "finalresult.uniqueId": recentIds?.detailsId,
+        },
+      },
+      {
+        $match: {
+          finalresult: {
+            $ne: [],
+          },
+          "finalresult.data.Invoice Number": { $ne: "", $exists: true },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          finalresult: 1,
+          diffBAMatch: { $subtract: ["$second", "$first"] },
+          diffABMatch: {
+            $subtract: ["$first", "$second"],
+          },
+          data: 1,
+        },
+      },
+    ]);
+
+    const iCaseDataStore1: any[] = [];
+    const matchPCaseData1: any[] = [];
+    const matchKCaseData1: any[] = [];
+    const matchGCaseData1: any[] = [];
+
+    const matchLCaseData1: any[] = [];
+    const matchMCaseData1: any[] = [];
+
+    const matchMThreeCaseData1: any[] = []; // M3
+
+    for (let i = 0; i < CheckTest?.length; i++) {
+      if (CheckTest[i]?.finalresult?.data) {
+        const diffBAMatch = CheckTest[i]?.diffBAMatch;
+        const documentNumber =
+          CheckTest[i]?.finalresult?.data["Document Number"];
+        const paymentDocument =
+          CheckTest[i]?.finalresult?.data["Payment Document"];
+
+        // I CASE
+        let IClosingBalance1: string | number = 0;
+        let pClosingBalance1: string | number = 0;
+        let kClosingBalance1: string | number = 0;
+        let GClosingBalance1: string | number = 0;
+
+        if (
+          documentNumber &&
+          (documentNumber.startsWith("AAD") ||
+            documentNumber.endsWith("AAD") ||
+            documentNumber.includes("AAD"))
+        ) {
+          iCaseDataStore1.push(CheckTest[i]?.finalresult);
+          // CLOSING BALANCE 3RD FILE
+          const closingBalanceString =
+            CheckTest[i]?.finalresult?.data?.["Debit Amount(INR)"];
+
+          if (closingBalanceString) {
+            const closingBalanceWithoutCommas = closingBalanceString.replace(
+              /,/g,
+              ""
+            );
+            const closingBalanceNumeric = parseFloat(
+              closingBalanceWithoutCommas
+            );
+            IClosingBalance1 = closingBalanceNumeric;
+          }
+        }
+        // P CASE
+        if (
+          documentNumber &&
+          (documentNumber.startsWith("PID") ||
+            documentNumber.endsWith("PID") ||
+            documentNumber.includes("PID"))
+        ) {
+          matchPCaseData1.push(CheckTest[i]?.finalresult);
+          // Debit Amount(INR) 3RD FILE
+          const closingBalanceString =
+            CheckTest[i]?.finalresult?.data?.["Debit Amount(INR)"];
+
+          if (closingBalanceString) {
+            const closingBalanceWithoutCommas = closingBalanceString.replace(
+              /,/g,
+              ""
+            );
+            const closingBalanceNumeric = parseFloat(
+              closingBalanceWithoutCommas
+            );
+            pClosingBalance1 = closingBalanceNumeric;
+          }
+        }
+        // K CASE
+        if (
+          documentNumber &&
+          (documentNumber.startsWith("TDS") ||
+            documentNumber.endsWith("TDS") ||
+            documentNumber.includes("TDS"))
+        ) {
+          matchKCaseData1.push(CheckTest[i]?.finalresult);
+          // Debit Amount(INR) 3RD FILE
+          const closingBalanceString =
+            CheckTest[i]?.finalresult?.data?.["Debit Amount(INR)"];
+
+          if (closingBalanceString) {
+            const closingBalanceWithoutCommas = closingBalanceString.replace(
+              /,/g,
+              ""
+            );
+            const closingBalanceNumeric = parseFloat(
+              closingBalanceWithoutCommas
+            );
+            kClosingBalance1 = closingBalanceNumeric;
+          }
+        }
+        // G CASE
+        if (
+          paymentDocument &&
+          paymentDocument !== "" &&
+          paymentDocument !== 0 &&
+          paymentDocument !== "0"
+        ) {
+          const closingBalanceString =
+            CheckTest[i]?.finalresult?.data?.["Debit Amount(INR)"];
+
+          if (closingBalanceString) {
+            const closingBalanceWithoutCommas = closingBalanceString.replace(
+              /,/g,
+              ""
+            );
+            const closingBalanceNumeric = parseFloat(
+              closingBalanceWithoutCommas
+            );
+            GClosingBalance1 = closingBalanceNumeric;
+            matchGCaseData1.push(CheckTest[i]?.finalresult);
+          }
+        }
+
+        // SUM P K G I  ==  DIFF ( SECOND  - FIRST) + ;
+        const sum =
+          IClosingBalance1 +
+          pClosingBalance1 +
+          kClosingBalance1 +
+          GClosingBalance1;
+
+        if (sum > diffBAMatch) {
+          matchMCaseData1.push(CheckTest[i]?.finalresult);
+        } else if (sum < diffBAMatch) {
+          matchLCaseData1.push(CheckTest[i]?.finalresult);
+        }
+      }
+      const diffBAMatch = CheckTest[i]?.diffBAMatch;
+      console.log(diffBAMatch);
+      // FIRST > SECOND - [ M CASE ]
+      if (diffBAMatch < 0) {
+        matchMThreeCaseData1.push(CheckTest[i]?.data);
+      }
+    }
+
+    res.send({
+      matchGCaseData1,
+      iCaseDataStore1,
+      matchPCaseData1,
+      matchKCaseData1,
+      matchMCaseData1,
+      matchLCaseData1,
+      matchMThreeCaseData1,
+    });
+
+    // return;
     // <---------------------------- CASE P AND K AGGREGATION ---------------------------->
 
     const data = await Collection.aggregate([
@@ -289,7 +593,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
                 $expr: {
                   $and: [
                     { $eq: ["$data.Invoice Number", "$$invoiceNumber"] },
-                    { $eq: ["$uniqueId", recentIds.masterId] },
+                    { $eq: ["$uniqueId", recentIds?.masterId] },
                   ],
                 },
               },
@@ -484,7 +788,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
         $match: {
           "result.data.Invoice Number": {
             // SOMETIMES INVOICE NUMBER NOT MATCHED ALSO OCCUR SO KEEP CHECK INVOICE NUMBER SHOULD PRESENT. NEED ALSO IN 3 FILES THIS CHECK.
-            $exists: false,
+            $exists: true,
           },
         },
       },
