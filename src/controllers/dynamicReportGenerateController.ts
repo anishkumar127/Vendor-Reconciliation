@@ -484,7 +484,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
         $match: {
           "result.data.Invoice Number": {
             // SOMETIMES INVOICE NUMBER NOT MATCHED ALSO OCCUR SO KEEP CHECK INVOICE NUMBER SHOULD PRESENT. NEED ALSO IN 3 FILES THIS CHECK.
-            $exists: true,
+            $exists: false,
           },
         },
       },
@@ -522,15 +522,31 @@ export const dynamicReportGenerateController: RequestHandler = async (
           },
         },
       },
-      {
-        $project: {
-          data: 1,
-          result: 1,
-          diff: {
-            $subtract: ["$first", "$second"],
-          },
-        },
-      },
+      // {
+      //   $project: {
+      //     data: 1,
+      //     result: 1,
+      //     diff: {
+      //       $subtract: ["$first", "$second"],
+      //     },
+      //   },
+      // },
+      // {
+      //   $match: {
+      //     $expr: {
+      //       $gt: ["$first", "$second"],
+      //     },
+      //   },
+      // },
+      // {
+      //   $project: {
+      //     // _id: 0,
+      //     data: 1,
+      //     // first: 1,
+      //     // second: 1,
+      //     // result: 1,
+      //   },
+      // },
       //  {
       //   '$match': {
       //     'diff': {
@@ -538,13 +554,43 @@ export const dynamicReportGenerateController: RequestHandler = async (
       //     }
       //   }
       // },
+      // {
+      //   $project: {
+      //     data: 1,
+      //     diff: 1,
+      //   },
+      // },
+
       {
         $project: {
           data: 1,
+          result: 1,
+          first: 1,
+          second: 1,
+          diff: {
+            $subtract: ["$first", "$second"],
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $gt: ["$first", "$second"],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          data: 1,
           diff: 1,
+          // first:1,
+          // second:1,
+          // result:1
         },
       },
     ]);
+    // res.send(MThreeCaseAgg);
 
     // <---------------------------- CASE i ---------------------------->
 
@@ -652,6 +698,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
     ]);
 
     const iCaseDataStore: any[] = [];
+    let IClosingBalance: string | number = 0;
     for (let i = 0; i < iCaseAgg?.length; i++) {
       const documentNumber = iCaseAgg[i]?.data["Document Number"];
 
@@ -662,6 +709,18 @@ export const dynamicReportGenerateController: RequestHandler = async (
           documentNumber.includes("AAD"))
       ) {
         iCaseDataStore.push(iCaseAgg[i]);
+
+        // CLOSING BALANCE 3RD FILE
+        const closingBalanceString = iCaseAgg[i]?.data["Closing Balance"];
+
+        if (closingBalanceString) {
+          const closingBalanceWithoutCommas = closingBalanceString.replace(
+            /,/g,
+            ""
+          );
+          const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+          IClosingBalance = closingBalanceNumeric;
+        }
       }
     }
 
@@ -734,6 +793,8 @@ export const dynamicReportGenerateController: RequestHandler = async (
     const matchKCaseData: any = [];
     let isPCaseTrue: boolean = false;
     let isKCaseTrue: boolean = false;
+    let pClosingBalance: string | number = 0;
+    let kClosingBalance: string | number = 0;
 
     //  BACK TO OPTIMAL VIA - ADDED INTO PIPELINE - WHAT ADDED ? - INCLUDES METHOD ON INVOICE NUMBER.
     for (let i = 0; i < data?.length; i++) {
@@ -747,6 +808,20 @@ export const dynamicReportGenerateController: RequestHandler = async (
       ) {
         isPCaseTrue = true;
         matchPCaseData.push(data[i]?.finalresult);
+
+        // CLOSING BALANCE
+
+        const closingBalanceString =
+          data[i].finalresult.data["Closing Balance"];
+
+        if (closingBalanceString) {
+          const closingBalanceWithoutCommas = closingBalanceString.replace(
+            /,/g,
+            ""
+          );
+          const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+          pClosingBalance = closingBalanceNumeric;
+        }
       } else if (
         documentNumber &&
         (documentNumber.startsWith("TDS") ||
@@ -756,6 +831,19 @@ export const dynamicReportGenerateController: RequestHandler = async (
         isKCaseTrue = true;
         //
         matchKCaseData.push(data[i]?.finalresult);
+
+        // CLOSING BALANCE
+        const closingBalanceString =
+          data[i].finalresult.data["Closing Balance"];
+
+        if (closingBalanceString) {
+          const closingBalanceWithoutCommas = closingBalanceString.replace(
+            /,/g,
+            ""
+          );
+          const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+          kClosingBalance = closingBalanceNumeric;
+        }
       }
     }
 
@@ -998,7 +1086,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
     if (iCaseDataStore) {
       let idx: number = 1;
       for (const item of iCaseDataStore) {
-        console.log(item);
         const ICaseInstance = await new ICase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -1050,7 +1137,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
     if (CaseF) {
       let idx: number = 1;
       for (const item of CaseF) {
-        //
         const FCaseInstance = await new FCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -1100,6 +1186,34 @@ export const dynamicReportGenerateController: RequestHandler = async (
         }
       }
     }
+
+    // L TAB - P K G I  THE DIFFERENCES
+
+    let GClosingBalance: string | number = 0;
+
+    for (let i = 0; i < GCaseData?.length; i++) {
+      const closingBalanceString = GCaseData[i]?.data["Closing Balance"];
+
+      if (closingBalanceString) {
+        const closingBalanceWithoutCommas = closingBalanceString.replace(
+          /,/g,
+          ""
+        );
+        const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+        GClosingBalance = closingBalanceNumeric;
+      }
+    }
+
+    // SUM OF
+    const sum =
+      kClosingBalance + pClosingBalance + GClosingBalance + IClosingBalance;
+    // res.send({
+    //   sum,
+    //   kClosingBalance,
+    //   pClosingBalance,
+    //   GClosingBalance,
+    //   IClosingBalance,
+    // });
 
     return res.status(200).json({
       message: "ok",
