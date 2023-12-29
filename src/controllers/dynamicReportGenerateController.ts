@@ -12,6 +12,7 @@ import ACase from "../models/cases/ACase.model";
 import LOneCase from "../models/cases/LOneCase.model";
 import MOneCase from "../models/cases/MOneCase.model";
 import ICase from "../models/cases/ICase.model";
+import MThreeCase from "../models/cases/MThree.model";
 
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
@@ -248,8 +249,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
-    // res.send(ACaseFutureData);
-
     // <---------------------------- CASE L AND M  AGGREGATION ---------------------------->
 
     const CaseLAndM = await vendorCollection.aggregate([
@@ -463,6 +462,90 @@ export const dynamicReportGenerateController: RequestHandler = async (
         $replaceRoot: { newRoot: "$finalresult" },
       },
     ]);
+    // <---------------------------- CASE M3 ---------------------------->
+
+    const MThreeCaseAgg = await Collection.aggregate([
+      {
+        $match: {
+          "data.Vendor Name": vendorName,
+          uniqueId: recentIds?.masterId,
+        },
+      },
+      {
+        $lookup: {
+          from: vendorCollection.collection.name,
+
+          localField: "data.Invoice Number",
+          foreignField: "data.Invoice Number",
+          as: "result",
+        },
+      },
+      {
+        $match: {
+          "result.data.Invoice Number": {
+            // SOMETIMES INVOICE NUMBER NOT MATCHED ALSO OCCUR SO KEEP CHECK INVOICE NUMBER SHOULD PRESENT. NEED ALSO IN 3 FILES THIS CHECK.
+            $exists: true,
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$result",
+        },
+      },
+      {
+        $match: {
+          "result.uniqueId": recentIds?.vendorId,
+        },
+      },
+      {
+        $project: {
+          data: 1,
+          result: 1,
+          first: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+          second: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$result.data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          data: 1,
+          result: 1,
+          diff: {
+            $subtract: ["$first", "$second"],
+          },
+        },
+      },
+      //  {
+      //   '$match': {
+      //     'diff': {
+      //       '$gt': 1
+      //     }
+      //   }
+      // },
+      {
+        $project: {
+          data: 1,
+          diff: 1,
+        },
+      },
+    ]);
+
     // <---------------------------- CASE i ---------------------------->
 
     const iCaseAgg = await Collection.aggregate([
@@ -581,7 +664,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
         iCaseDataStore.push(iCaseAgg[i]);
       }
     }
-    // res.send(iCaseDataStore);
 
     // <---------------------------- CASE M1 INVOICE EMPTY ---------------------------->
     const MCaseInvoiceEmpty = await vendorCollection.aggregate([
@@ -849,7 +931,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
     }
 
     // L1 CASE INVOICE EMPTY
-    // res.send({ LCaseInvoiceEmpty, MCaseInvoiceEmpty });
     if (LCaseInvoiceEmpty) {
       let idx: number = 1;
       for (const item of LCaseInvoiceEmpty) {
@@ -890,6 +971,29 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
+    // <---------------------------- CASE M3 DATABASE  ---------------------------->
+
+    if (MThreeCaseAgg) {
+      let idx: number = 1;
+      for (const item of MThreeCaseAgg) {
+        const MThreeCaseInstance = await new MThreeCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Vendor Name": item?.data["Vendor Name"],
+          "Company Code": item?.data["Company Code"],
+          Amount: item?.data["Closing Balance"],
+          Difference: item?.diff,
+        });
+        try {
+          await MThreeCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
     // <---------------------------- CASE I DATABASE  ---------------------------->
     if (iCaseDataStore) {
       let idx: number = 1;
@@ -996,6 +1100,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
         }
       }
     }
+
     return res.status(200).json({
       message: "ok",
       data: data,
