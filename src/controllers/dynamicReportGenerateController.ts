@@ -79,7 +79,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
   try {
     // test
 
-    const CheckTest = await Collection.aggregate([
+    const LeftSideAggregation = await Collection.aggregate([
       {
         $match: {
           "data.Vendor Name": vendorName,
@@ -244,13 +244,13 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     const matchMThreeCaseData1: any[] = []; // M3
 
-    for (let i = 0; i < CheckTest?.length; i++) {
-      if (CheckTest[i]?.finalresult?.data) {
-        const diffBAMatch = CheckTest[i]?.diffBAMatch;
+    for (let i = 0; i < LeftSideAggregation?.length; i++) {
+      if (LeftSideAggregation[i]?.finalresult?.data) {
+        const diffBAMatch = LeftSideAggregation[i]?.diffBAMatch;
         const documentNumber =
-          CheckTest[i]?.finalresult?.data["Document Number"];
+          LeftSideAggregation[i]?.finalresult?.data["Document Number"];
         const paymentDocument =
-          CheckTest[i]?.finalresult?.data["Payment Document"];
+          LeftSideAggregation[i]?.finalresult?.data["Payment Document"];
 
         // I CASE
         let IClosingBalance1: string | number = 0;
@@ -264,10 +264,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
             documentNumber.endsWith("AAD") ||
             documentNumber.includes("AAD"))
         ) {
-          iCaseDataStore1.push(CheckTest[i]?.finalresult);
+          iCaseDataStore1.push(LeftSideAggregation[i]?.finalresult);
           // CLOSING BALANCE 3RD FILE
           const closingBalanceString =
-            CheckTest[i]?.finalresult?.data?.["Debit Amount(INR)"];
+            LeftSideAggregation[i]?.finalresult?.data?.["Debit Amount(INR)"];
 
           if (closingBalanceString) {
             const closingBalanceWithoutCommas = closingBalanceString.replace(
@@ -287,10 +287,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
             documentNumber.endsWith("PID") ||
             documentNumber.includes("PID"))
         ) {
-          matchPCaseData1.push(CheckTest[i]?.finalresult);
+          matchPCaseData1.push(LeftSideAggregation[i]?.finalresult);
           // Debit Amount(INR) 3RD FILE
           const closingBalanceString =
-            CheckTest[i]?.finalresult?.data?.["Debit Amount(INR)"];
+            LeftSideAggregation[i]?.finalresult?.data?.["Debit Amount(INR)"];
 
           if (closingBalanceString) {
             const closingBalanceWithoutCommas = closingBalanceString.replace(
@@ -310,10 +310,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
             documentNumber.endsWith("TDS") ||
             documentNumber.includes("TDS"))
         ) {
-          matchKCaseData1.push(CheckTest[i]?.finalresult);
+          matchKCaseData1.push(LeftSideAggregation[i]?.finalresult);
           // Debit Amount(INR) 3RD FILE
           const closingBalanceString =
-            CheckTest[i]?.finalresult?.data?.["Debit Amount(INR)"];
+            LeftSideAggregation[i]?.finalresult?.data?.["Debit Amount(INR)"];
 
           if (closingBalanceString) {
             const closingBalanceWithoutCommas = closingBalanceString.replace(
@@ -334,7 +334,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
           paymentDocument !== "0"
         ) {
           const closingBalanceString =
-            CheckTest[i]?.finalresult?.data?.["Debit Amount(INR)"];
+            LeftSideAggregation[i]?.finalresult?.data?.["Debit Amount(INR)"];
 
           if (closingBalanceString) {
             const closingBalanceWithoutCommas = closingBalanceString.replace(
@@ -345,7 +345,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
               closingBalanceWithoutCommas
             );
             GClosingBalance1 = closingBalanceNumeric;
-            matchGCaseData1.push(CheckTest[i]?.finalresult);
+            matchGCaseData1.push(LeftSideAggregation[i]?.finalresult);
           }
         }
 
@@ -357,28 +357,28 @@ export const dynamicReportGenerateController: RequestHandler = async (
           GClosingBalance1;
 
         if (sum > diffBAMatch) {
-          matchMCaseData1.push(CheckTest[i]?.finalresult);
+          matchMCaseData1.push(LeftSideAggregation[i]?.finalresult);
         } else if (sum < diffBAMatch) {
-          matchLCaseData1.push(CheckTest[i]?.finalresult);
+          matchLCaseData1.push(LeftSideAggregation[i]?.finalresult);
         }
       }
-      const diffBAMatch = CheckTest[i]?.diffBAMatch;
+      const diffBAMatch = LeftSideAggregation[i]?.diffBAMatch;
       console.log(diffBAMatch);
       // FIRST > SECOND - [ M CASE ]
       if (diffBAMatch < 0) {
-        matchMThreeCaseData1.push(CheckTest[i]?.data);
+        matchMThreeCaseData1.push(LeftSideAggregation[i]?.data);
       }
     }
 
-    res.send({
-      matchGCaseData1,
-      iCaseDataStore1,
-      matchPCaseData1,
-      matchKCaseData1,
-      matchMCaseData1,
-      matchLCaseData1,
-      matchMThreeCaseData1,
-    });
+    // res.send({
+    //   matchGCaseData1,
+    //   iCaseDataStore1,
+    //   matchPCaseData1,
+    //   matchKCaseData1,
+    //   matchMCaseData1,
+    //   matchLCaseData1,
+    //   matchMThreeCaseData1,
+    // });
 
     // return;
     // <---------------------------- CASE P AND K AGGREGATION ---------------------------->
@@ -649,7 +649,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
-    //  G CASE
+    //  G CASE AGGREGATE
 
     const GCaseData = await Collection.aggregate([
       {
@@ -766,7 +766,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
         $replaceRoot: { newRoot: "$finalresult" },
       },
     ]);
-    // <---------------------------- CASE M3 ---------------------------->
+    // <---------------------------- CASE M3 AGGREGATE ---------------------------->
 
     const MThreeCaseAgg = await Collection.aggregate([
       {
@@ -896,7 +896,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
     ]);
     // res.send(MThreeCaseAgg);
 
-    // <---------------------------- CASE i ---------------------------->
+    // <---------------------------- CASE i AGGREGATE ---------------------------->
 
     const iCaseAgg = await Collection.aggregate([
       {
@@ -1001,34 +1001,34 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
-    const iCaseDataStore: any[] = [];
-    let IClosingBalance: string | number = 0;
-    for (let i = 0; i < iCaseAgg?.length; i++) {
-      const documentNumber = iCaseAgg[i]?.data["Document Number"];
+    // const iCaseDataStore: any[] = [];
+    // let IClosingBalance: string | number = 0;
+    // for (let i = 0; i < iCaseAgg?.length; i++) {
+    //   const documentNumber = iCaseAgg[i]?.data["Document Number"];
 
-      if (
-        documentNumber &&
-        (documentNumber.startsWith("AAD") ||
-          documentNumber.endsWith("AAD") ||
-          documentNumber.includes("AAD"))
-      ) {
-        iCaseDataStore.push(iCaseAgg[i]);
+    //   if (
+    //     documentNumber &&
+    //     (documentNumber.startsWith("AAD") ||
+    //       documentNumber.endsWith("AAD") ||
+    //       documentNumber.includes("AAD"))
+    //   ) {
+    // iCaseDataStore.push(iCaseAgg[i]);
 
-        // CLOSING BALANCE 3RD FILE
-        const closingBalanceString = iCaseAgg[i]?.data["Closing Balance"];
+    //     // CLOSING BALANCE 3RD FILE
+    //     const closingBalanceString = iCaseAgg[i]?.data["Closing Balance"];
 
-        if (closingBalanceString) {
-          const closingBalanceWithoutCommas = closingBalanceString.replace(
-            /,/g,
-            ""
-          );
-          const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
-          IClosingBalance = closingBalanceNumeric;
-        }
-      }
-    }
+    //     if (closingBalanceString) {
+    //       const closingBalanceWithoutCommas = closingBalanceString.replace(
+    //         /,/g,
+    //         ""
+    //       );
+    //       const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+    //       IClosingBalance = closingBalanceNumeric;
+    //     }
+    //   }
+    // }
 
-    // <---------------------------- CASE M1 INVOICE EMPTY ---------------------------->
+    // <---------------------------- CASE M1 INVOICE EMPTY AGGREGATE ---------------------------->
     const MCaseInvoiceEmpty = await vendorCollection.aggregate([
       [
         {
@@ -1066,7 +1066,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
         // },
       ],
     ]);
-    // <---------------------------- CASE L1 INVOICE EMPTY ---------------------------->
+    // <---------------------------- CASE L1 INVOICE EMPTY AGGREGATE ---------------------------->
     const LCaseInvoiceEmpty = await vendorCollection.aggregate([
       [
         {
@@ -1092,73 +1092,74 @@ export const dynamicReportGenerateController: RequestHandler = async (
       ],
     ]);
     // <---------------------------- CASE P AND K ---------------------------->
-    const matchPCaseData: any = [];
+    // const matchPCaseData: any = [];
 
-    const matchKCaseData: any = [];
-    let isPCaseTrue: boolean = false;
-    let isKCaseTrue: boolean = false;
-    let pClosingBalance: string | number = 0;
-    let kClosingBalance: string | number = 0;
+    // const matchKCaseData: any = [];
+    // let isPCaseTrue: boolean = false;
+    // let isKCaseTrue: boolean = false;
+    // let pClosingBalance: string | number = 0;
+    // let kClosingBalance: string | number = 0;
 
     //  BACK TO OPTIMAL VIA - ADDED INTO PIPELINE - WHAT ADDED ? - INCLUDES METHOD ON INVOICE NUMBER.
-    for (let i = 0; i < data?.length; i++) {
-      //  MATCHING THE DOCUMENT TYPE.
-      const documentNumber = data[i].finalresult.data["Document Number"];
-      if (
-        documentNumber &&
-        (documentNumber.startsWith("PID") ||
-          documentNumber.endsWith("PID") ||
-          documentNumber.includes("PID"))
-      ) {
-        isPCaseTrue = true;
-        matchPCaseData.push(data[i]?.finalresult);
+    // for (let i = 0; i < data?.length; i++) {
+    //   //  MATCHING THE DOCUMENT TYPE.
+    //   const documentNumber = data[i].finalresult.data["Document Number"];
+    //   if (
+    //     documentNumber &&
+    //     (documentNumber.startsWith("PID") ||
+    //       documentNumber.endsWith("PID") ||
+    //       documentNumber.includes("PID"))
+    //   ) {
+    //     isPCaseTrue = true;
+    //     matchPCaseData.push(data[i]?.finalresult);
 
-        // CLOSING BALANCE
+    //     // CLOSING BALANCE
 
-        const closingBalanceString =
-          data[i].finalresult.data["Closing Balance"];
+    //     const closingBalanceString =
+    //       data[i].finalresult.data["Closing Balance"];
 
-        if (closingBalanceString) {
-          const closingBalanceWithoutCommas = closingBalanceString.replace(
-            /,/g,
-            ""
-          );
-          const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
-          pClosingBalance = closingBalanceNumeric;
-        }
-      } else if (
-        documentNumber &&
-        (documentNumber.startsWith("TDS") ||
-          documentNumber.endsWith("TDS") ||
-          documentNumber.includes("TDS"))
-      ) {
-        isKCaseTrue = true;
-        //
-        matchKCaseData.push(data[i]?.finalresult);
+    //     if (closingBalanceString) {
+    //       const closingBalanceWithoutCommas = closingBalanceString.replace(
+    //         /,/g,
+    //         ""
+    //       );
+    //       const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+    //       pClosingBalance = closingBalanceNumeric;
+    //     }
+    //   } else if (
+    //     documentNumber &&
+    //     (documentNumber.startsWith("TDS") ||
+    //       documentNumber.endsWith("TDS") ||
+    //       documentNumber.includes("TDS"))
+    //   ) {
+    //     isKCaseTrue = true;
+    //     //
+    //     matchKCaseData.push(data[i]?.finalresult);
 
-        // CLOSING BALANCE
-        const closingBalanceString =
-          data[i].finalresult.data["Closing Balance"];
+    //     // CLOSING BALANCE
+    //     const closingBalanceString =
+    //       data[i].finalresult.data["Closing Balance"];
 
-        if (closingBalanceString) {
-          const closingBalanceWithoutCommas = closingBalanceString.replace(
-            /,/g,
-            ""
-          );
-          const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
-          kClosingBalance = closingBalanceNumeric;
-        }
-      }
-    }
+    //     if (closingBalanceString) {
+    //       const closingBalanceWithoutCommas = closingBalanceString.replace(
+    //         /,/g,
+    //         ""
+    //       );
+    //       const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+    //       kClosingBalance = closingBalanceNumeric;
+    //     }
+    //   }
+    // }
 
-    const pCaseDataFlat = await matchPCaseData.flat();
+    // const pCaseDataFlat = await matchPCaseData.flat();
 
     // TEST K CASE - IF K CASE SUCCESS.
-    const kCaseDataFlat = await matchKCaseData.flat();
+    // const kCaseDataFlat = await matchKCaseData.flat();
+
     // STORE INTO THE P CASE COLLECTION
-    if (isPCaseTrue) {
+    if (matchPCaseData1) {
       let idx: number = 1;
-      for (const item of pCaseDataFlat) {
+      for (const item of matchPCaseData1) {
         if (item?.data["Debit Amount(INR)"]) {
           const pCaseInstance = await new PCase({
             user: new mongoose.Types.ObjectId(_id),
@@ -1182,9 +1183,9 @@ export const dynamicReportGenerateController: RequestHandler = async (
     }
 
     // STORE INTO K CASE COLLECTION.
-    if (isKCaseTrue) {
+    if (matchKCaseData1) {
       let idx: number = 1;
-      for (const item of kCaseDataFlat) {
+      for (const item of matchKCaseData1) {
         if (item?.data["Debit Amount(INR)"]) {
           const kCaseInstance = await new KCase({
             user: new mongoose.Types.ObjectId(_id),
@@ -1226,60 +1227,60 @@ export const dynamicReportGenerateController: RequestHandler = async (
     }
 
     // <---------------------------- CASE L AND M ---------------------------->
-    const matchLCaseData: any = [];
-    const matchMCaseData: any = [];
-    let isLCaseTrue: boolean = false;
-    let isMCaseTrue: boolean = false;
+    // const matchLCaseData: any = [];
+    // const matchMCaseData: any = [];
+    // let isLCaseTrue: boolean = false;
+    // let isMCaseTrue: boolean = false;
 
-    for (let i = 0; i < CaseLAndM?.length; i++) {
-      const closingBalanceString =
-        CaseLAndM[i].combinedData.A.data["Closing Balance"];
+    // for (let i = 0; i < CaseLAndM?.length; i++) {
+    //   const closingBalanceString =
+    //     CaseLAndM[i].combinedData.A.data["Closing Balance"];
 
-      // Step 1: Remove commas from the string
-      const closingBalanceWithoutCommas = closingBalanceString.replace(
-        /,/g,
-        ""
-      );
+    //   // Step 1: Remove commas from the string
+    //   const closingBalanceWithoutCommas = closingBalanceString.replace(
+    //     /,/g,
+    //     ""
+    //   );
 
-      // Step 2: Convert the string to a numeric format
-      const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+    //   // Step 2: Convert the string to a numeric format
+    //   const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
 
-      if (
-        CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
-        CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
-        closingBalanceNumeric >= 0
-      ) {
-        // CREDIT AMOUNT
-        isMCaseTrue = true;
-        const filteredData = {
-          ...CaseLAndM[i].combinedData.A,
-          ACMatch: undefined,
-          ABMatch: undefined,
-        };
-        matchMCaseData.push(filteredData);
-      } else if (
-        CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
-        CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
-        closingBalanceNumeric < 0
-      ) {
-        // DEBIT AMOUNT
-        isLCaseTrue = true;
-        // matchLCaseData.push(...CaseLAndM[i].combinedData.A.ACMatch);
-        const filteredData = {
-          ...CaseLAndM[i].combinedData.A,
-          ACMatch: undefined,
-          ABMatch: undefined,
-        };
-        matchLCaseData.push(filteredData);
-      }
-    }
+    //   if (
+    //     CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
+    //     CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
+    //     closingBalanceNumeric >= 0
+    //   ) {
+    //     // CREDIT AMOUNT
+    //     isMCaseTrue = true;
+    //     const filteredData = {
+    //       ...CaseLAndM[i].combinedData.A,
+    //       ACMatch: undefined,
+    //       ABMatch: undefined,
+    //     };
+    //     matchMCaseData.push(filteredData);
+    //   } else if (
+    //     CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
+    //     CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
+    //     closingBalanceNumeric < 0
+    //   ) {
+    //     // DEBIT AMOUNT
+    //     isLCaseTrue = true;
+    //     // matchLCaseData.push(...CaseLAndM[i].combinedData.A.ACMatch);
+    //     const filteredData = {
+    //       ...CaseLAndM[i].combinedData.A,
+    //       ACMatch: undefined,
+    //       ABMatch: undefined,
+    //     };
+    //     matchLCaseData.push(filteredData);
+    //   }
+    // }
 
-    const LCaseDataFlat = await matchLCaseData.flat();
-    const MCaseDataFlat = await matchMCaseData.flat();
+    // const LCaseDataFlat = await matchLCaseData.flat();
+    // const MCaseDataFlat = await matchMCaseData.flat();
     // STORE INTO L CASE COLLECTION.
-    if (isLCaseTrue) {
+    if (matchLCaseData1) {
       let idx: number = 1;
-      for (const item of LCaseDataFlat) {
+      for (const item of matchLCaseData1) {
         const LCaseInstance = await new LCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -1300,9 +1301,9 @@ export const dynamicReportGenerateController: RequestHandler = async (
     }
 
     // STORE INTO M CASE COLLECTION.
-    if (isMCaseTrue) {
+    if (matchMCaseData1) {
       let idx: number = 1;
-      for (const item of MCaseDataFlat) {
+      for (const item of matchMCaseData1) {
         const MCaseInstance = await new MCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -1322,7 +1323,8 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
-    // L1 CASE INVOICE EMPTY
+    // <----------------------------  CASE L1 INVOICE EMPTY DATABASE  ---------------------------->
+
     if (LCaseInvoiceEmpty) {
       let idx: number = 1;
       for (const item of LCaseInvoiceEmpty) {
@@ -1342,8 +1344,8 @@ export const dynamicReportGenerateController: RequestHandler = async (
         }
       }
     }
+    // <---------------------------- CASE M1 INVOICE EMPTY DATABASE  ---------------------------->
 
-    // M1 CASE INVOICE EMPTY
     if (MCaseInvoiceEmpty) {
       let idx: number = 1;
       for (const item of MCaseInvoiceEmpty) {
@@ -1365,9 +1367,9 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     // <---------------------------- CASE M3 DATABASE  ---------------------------->
 
-    if (MThreeCaseAgg) {
+    if (matchMThreeCaseData1) {
       let idx: number = 1;
-      for (const item of MThreeCaseAgg) {
+      for (const item of matchMThreeCaseData1) {
         const MThreeCaseInstance = await new MThreeCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -1387,9 +1389,9 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
     // <---------------------------- CASE I DATABASE  ---------------------------->
-    if (iCaseDataStore) {
+    if (iCaseDataStore1) {
       let idx: number = 1;
-      for (const item of iCaseDataStore) {
+      for (const item of iCaseDataStore1) {
         const ICaseInstance = await new ICase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -1466,9 +1468,9 @@ export const dynamicReportGenerateController: RequestHandler = async (
     }
 
     // <---------------------------- CASE G DATABASE  ---------------------------->
-    if (GCaseData) {
+    if (matchGCaseData1) {
       let idx: number = 1;
-      for (const item of GCaseData) {
+      for (const item of matchGCaseData1) {
         const GCaseInstance = await new GCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -1491,33 +1493,22 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
-    // L TAB - P K G I  THE DIFFERENCES
+    // // L TAB - P K G I  THE DIFFERENCES
 
-    let GClosingBalance: string | number = 0;
+    // let GClosingBalance: string | number = 0;
 
-    for (let i = 0; i < GCaseData?.length; i++) {
-      const closingBalanceString = GCaseData[i]?.data["Closing Balance"];
+    // for (let i = 0; i < GCaseData?.length; i++) {
+    //   const closingBalanceString = GCaseData[i]?.data["Closing Balance"];
 
-      if (closingBalanceString) {
-        const closingBalanceWithoutCommas = closingBalanceString.replace(
-          /,/g,
-          ""
-        );
-        const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
-        GClosingBalance = closingBalanceNumeric;
-      }
-    }
-
-    // SUM OF
-    const sum =
-      kClosingBalance + pClosingBalance + GClosingBalance + IClosingBalance;
-    // res.send({
-    //   sum,
-    //   kClosingBalance,
-    //   pClosingBalance,
-    //   GClosingBalance,
-    //   IClosingBalance,
-    // });
+    //   if (closingBalanceString) {
+    //     const closingBalanceWithoutCommas = closingBalanceString.replace(
+    //       /,/g,
+    //       ""
+    //     );
+    //     const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+    //     GClosingBalance = closingBalanceNumeric;
+    //   }
+    // }
 
     return res.status(200).json({
       message: "ok",
