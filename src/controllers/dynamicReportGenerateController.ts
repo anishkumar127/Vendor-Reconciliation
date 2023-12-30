@@ -12,7 +12,9 @@ import ACase from "../models/cases/ACase.model";
 import LOneCase from "../models/cases/LOneCase.model";
 import MOneCase from "../models/cases/MOneCase.model";
 import ICase from "../models/cases/ICase.model";
-import MThreeCase from "../models/cases/MThree.model";
+import MTwoCase from "../models/cases/MTwo.model";
+import LTwoCase from "../models/cases/LTwoCase.model";
+import MThreeCase from "../models/cases/MThreeCase.model";
 
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
@@ -27,7 +29,7 @@ async function getModelByString(str: any) {
   }
 
   // IF NOT CACHED THEN MAKE IT NEW SCHEMA.
-  const yourSchema = await new mongoose.Schema(
+  const yourSchema = new mongoose.Schema( // no await because mongoose constructor is sync.
     {
       user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -174,9 +176,9 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
       {
         $lookup: {
-          from: "user@gmail.com@completes",
+          from: lastCollection.collection.name,
           let: {
-            localField: "$data.Invoice Number",
+            localField: "$result.data.Invoice Number",
           },
           pipeline: [
             {
@@ -234,6 +236,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
+    // P1 K1 G1 I1 L1 M1
     const iCaseDataStore1: any[] = [];
     const matchPCaseData1: any[] = [];
     const matchKCaseData1: any[] = [];
@@ -241,8 +244,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     const matchLCaseData1: any[] = [];
     const matchMCaseData1: any[] = [];
-
-    const matchMThreeCaseData1: any[] = []; // M3
 
     for (let i = 0; i < LeftSideAggregation?.length; i++) {
       if (LeftSideAggregation[i]?.finalresult?.data) {
@@ -362,28 +363,11 @@ export const dynamicReportGenerateController: RequestHandler = async (
           matchLCaseData1.push(LeftSideAggregation[i]?.finalresult);
         }
       }
-      const diffBAMatch = LeftSideAggregation[i]?.diffBAMatch;
-      console.log(diffBAMatch);
-      // FIRST > SECOND - [ M CASE ]
-      if (diffBAMatch < 0) {
-        matchMThreeCaseData1.push(LeftSideAggregation[i]?.data);
-      }
     }
 
-    // res.send({
-    //   matchGCaseData1,
-    //   iCaseDataStore1,
-    //   matchPCaseData1,
-    //   matchKCaseData1,
-    //   matchMCaseData1,
-    //   matchLCaseData1,
-    //   matchMThreeCaseData1,
-    // });
+    // <------------------------ M2 F > S AGGREGATION --------------------------------------->
 
-    // return;
-    // <---------------------------- CASE P AND K AGGREGATION ---------------------------->
-
-    const data = await Collection.aggregate([
+    const mTwoAggregate = await Collection.aggregate([
       {
         $match: {
           "data.Vendor Name": vendorName,
@@ -391,11 +375,48 @@ export const dynamicReportGenerateController: RequestHandler = async (
         },
       },
       {
+        $match: {
+          "data.Invoice Number": {
+            $exists: true,
+          },
+        },
+      },
+      {
         $lookup: {
-          from: vendorCollection.collection.name,
-          localField: "data.Invoice Number",
-          foreignField: "data.Invoice Number",
           as: "result",
+          from: vendorCollection.collection.name,
+          let: {
+            localField: "$data.Invoice Number",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $regexMatch: {
+                        input: "$data.Invoice Number",
+                        regex: "$$localField",
+                      },
+                    },
+                    {
+                      $regexMatch: {
+                        input: "$$localField",
+                        regex: "$data.Invoice Number",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $match: {
+          "result.data.Invoice Number": {
+            $exists: true,
+          },
         },
       },
       {
@@ -433,59 +454,24 @@ export const dynamicReportGenerateController: RequestHandler = async (
         },
       },
       {
+        $match: {
+          $expr: {
+            $gt: ["$first", "$second"],
+          },
+        },
+      },
+      {
         $project: {
+          _id: 0,
           data: 1,
-          result: 1,
-          diff: { $subtract: ["$second", "$first"] },
-        },
-      },
-      {
-        $match: {
-          diff: { $gt: 1 },
-        },
-      },
-      {
-        $lookup: {
-          from: lastCollection.collection.name,
-          let: { localField: "$data.Invoice Number" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $or: [
-                    {
-                      $regexMatch: {
-                        input: "$data.Invoice Number",
-                        regex: "$$localField",
-                      },
-                    },
-                    {
-                      $regexMatch: {
-                        input: "$$localField",
-                        regex: "$data.Invoice Number",
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-          as: "finalresult",
-        },
-      },
-      {
-        $unwind: {
-          path: "$finalresult",
-        },
-      },
-      {
-        $match: {
-          "finalresult.uniqueId": recentIds?.detailsId,
+          finalresult: 1,
+          diffBAMatch: { $subtract: ["$second", "$first"] },
+          diffABMatch: {
+            $subtract: ["$first", "$second"],
+          },
         },
       },
     ]);
-
-    if (!data) return res.status(500).json({ error: "server query error!" });
 
     // <---------------------------- CASE A AGGREGATION ---------------------------->
 
@@ -766,136 +752,361 @@ export const dynamicReportGenerateController: RequestHandler = async (
         $replaceRoot: { newRoot: "$finalresult" },
       },
     ]);
-    // <---------------------------- CASE M3 AGGREGATE ---------------------------->
 
-    const MThreeCaseAgg = await Collection.aggregate([
+    // L2 M3
+    // const LTwoAndMThreeAggregate = await vendorCollection.aggregate([
+    //   {
+    //     $match: {
+    //       "data.Invoice Number": {
+    //         $exists: true,
+    //       },
+    //       uniqueId: recentIds?.vendorId,
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: Collection.collection.name,
+    //       let: {
+    //         localField: "$data.Invoice Number",
+    //       },
+    //       pipeline: [
+    //         {
+    //           $match: {
+    //             $expr: {
+    //               $or: [
+    //                 {
+    //                   $regexMatch: {
+    //                     input: "$data.Invoice Number",
+    //                     regex: "$$localField",
+    //                   },
+    //                 },
+    //                 {
+    //                   $regexMatch: {
+    //                     input: "$$localField",
+    //                     regex: "$data.Invoice Number",
+    //                   },
+    //                 },
+    //               ],
+    //             },
+    //           },
+    //         },
+    //       ],
+    //       as: "resultmaster",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       resultmaster: {
+    //         $eq: [],
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: lastCollection.collection.name,
+    //       let: {
+    //         localField: "$data.Invoice Number",
+    //       },
+    //       pipeline: [
+    //         {
+    //           $match: {
+    //             $expr: {
+    //               $or: [
+    //                 {
+    //                   $regexMatch: {
+    //                     input: "$data.Invoice Number",
+    //                     regex: "$$localField",
+    //                   },
+    //                 },
+    //                 {
+    //                   $regexMatch: {
+    //                     input: "$$localField",
+    //                     regex: "$data.Invoice Number",
+    //                   },
+    //                 },
+    //               ],
+    //             },
+    //           },
+    //         },
+    //       ],
+    //       as: "resultcompletes",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       resultcompletes: {
+    //         $eq: [],
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       resultmaster: 0,
+    //       resultcompletes: 0,
+    //     },
+    //   },
+    // ]);
+
+    // const LTwoAndMThreeAggregate = await vendorCollection.aggregate([
+    //   {
+    //     $match: {
+    //       "data.Invoice Number": {
+    //         $exists: true,
+    //       },
+    //       uniqueId: recentIds?.vendorId,
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: Collection.collection.name,
+    //       let: {
+    //         localField: "$data.Invoice Number",
+    //       },
+    //       pipeline: [
+    //         {
+    //           $match: {
+    //             $expr: {
+    //               $or: [
+    //                 {
+    //                   $regexMatch: {
+    //                     input: "$data.Invoice Number",
+    //                     regex: "$$localField",
+    //                   },
+    //                 },
+    //                 {
+    //                   $regexMatch: {
+    //                     input: "$$localField",
+    //                     regex: "$data.Invoice Number",
+    //                   },
+    //                 },
+    //               ],
+    //             },
+    //           },
+    //         },
+    //         {
+    //           $match: {
+    //             "data.Invoice Number": {
+    //               $exists: true,
+    //             },
+    //             $expr: {
+    //               $eq: ["$uniqueId", recentIds?.masterId],
+    //             },
+    //           },
+    //         },
+    //       ],
+    //       as: "resultmaster",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       resultmaster: {
+    //         $eq: [],
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: lastCollection.collection.name,
+    //       let: {
+    //         localField: "$data.Invoice Number",
+    //       },
+    //       pipeline: [
+    //         {
+    //           $match: {
+    //             $expr: {
+    //               $or: [
+    //                 {
+    //                   $regexMatch: {
+    //                     input: "$data.Invoice Number",
+    //                     regex: "$$localField",
+    //                   },
+    //                 },
+    //                 {
+    //                   $regexMatch: {
+    //                     input: "$$localField",
+    //                     regex: "$data.Invoice Number",
+    //                   },
+    //                 },
+    //               ],
+    //             },
+    //           },
+    //         },
+    //         {
+    //           $match: {
+    //             "data.Invoice Number": {
+    //               $exists: true,
+    //             },
+    //             $expr: {
+    //               $eq: ["$uniqueId", recentIds?.detailsId],
+    //             },
+    //           },
+    //         },
+    //       ],
+    //       as: "resultcompletes",
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       resultcompletes: {
+    //         $eq: [],
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       data: 1,
+    //       resultmaster: 1,
+    //       resultcompletes: 1,
+    //     },
+    //   },
+    // ]);
+
+    const LTwoAndMThreeAggregate = await vendorCollection.aggregate([
       {
         $match: {
-          "data.Vendor Name": vendorName,
-          uniqueId: recentIds?.masterId,
+          "data.Invoice Number": {
+            $exists: true,
+            $ne: "", // This ensures that "data.Invoice Number" is not an empty string
+            $regex: /\S+/, // This ensures that "data.Invoice Number" is not just whitespace
+          },
+          uniqueId: recentIds?.vendorId,
         },
       },
       {
         $lookup: {
-          from: vendorCollection.collection.name,
-
-          localField: "data.Invoice Number",
-          foreignField: "data.Invoice Number",
-          as: "result",
-        },
-      },
-      {
-        $match: {
-          "result.data.Invoice Number": {
-            // SOMETIMES INVOICE NUMBER NOT MATCHED ALSO OCCUR SO KEEP CHECK INVOICE NUMBER SHOULD PRESENT. NEED ALSO IN 3 FILES THIS CHECK.
-            $exists: true,
+          from: Collection.collection.name,
+          let: {
+            localField: "$data.Invoice Number",
+            masterId: recentIds?.masterId,
           },
-        },
-      },
-      {
-        $unwind: {
-          path: "$result",
-        },
-      },
-      {
-        $match: {
-          "result.uniqueId": recentIds?.vendorId,
-        },
-      },
-      {
-        $project: {
-          data: 1,
-          result: 1,
-          first: {
-            $toDouble: {
-              $replaceAll: {
-                input: "$data.Closing Balance",
-                find: ",",
-                replacement: "",
+          pipeline: [
+            {
+              $match: {
+                "data.Invoice Number": {
+                  $exists: true,
+                  $ne: "", // This ensures that "data.Invoice Number" is not an empty string
+                  $regex: /\S+/, // This ensures that "data.Invoice Number" is not just whitespace
+                },
+                $expr: {
+                  $and: [
+                    {
+                      $or: [
+                        {
+                          $regexMatch: {
+                            input: "$data.Invoice Number",
+                            regex: "$$localField",
+                          },
+                        },
+                        {
+                          $regexMatch: {
+                            input: "$$localField",
+                            regex: "$data.Invoice Number",
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      $eq: ["$uniqueId", "$$masterId"],
+                    },
+                  ],
+                },
               },
             },
-          },
-          second: {
-            $toDouble: {
-              $replaceAll: {
-                input: "$result.data.Closing Balance",
-                find: ",",
-                replacement: "",
-              },
-            },
-          },
-        },
-      },
-      // {
-      //   $project: {
-      //     data: 1,
-      //     result: 1,
-      //     diff: {
-      //       $subtract: ["$first", "$second"],
-      //     },
-      //   },
-      // },
-      // {
-      //   $match: {
-      //     $expr: {
-      //       $gt: ["$first", "$second"],
-      //     },
-      //   },
-      // },
-      // {
-      //   $project: {
-      //     // _id: 0,
-      //     data: 1,
-      //     // first: 1,
-      //     // second: 1,
-      //     // result: 1,
-      //   },
-      // },
-      //  {
-      //   '$match': {
-      //     'diff': {
-      //       '$gt': 1
-      //     }
-      //   }
-      // },
-      // {
-      //   $project: {
-      //     data: 1,
-      //     diff: 1,
-      //   },
-      // },
-
-      {
-        $project: {
-          data: 1,
-          result: 1,
-          first: 1,
-          second: 1,
-          diff: {
-            $subtract: ["$first", "$second"],
-          },
+          ],
+          as: "resultmaster",
         },
       },
       {
         $match: {
-          $expr: {
-            $gt: ["$first", "$second"],
+          resultmaster: {
+            $eq: [],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: lastCollection.collection.name,
+          let: {
+            localField: "$data.Invoice Number",
+            detailsId: recentIds?.detailsId,
+          },
+          pipeline: [
+            {
+              $match: {
+                "data.Invoice Number": {
+                  $exists: true,
+                  $ne: "", // This ensures that "data.Invoice Number" is not an empty string
+                  $regex: /\S+/, // This ensures that "data.Invoice Number" is not just whitespace
+                },
+                $expr: {
+                  $and: [
+                    {
+                      $or: [
+                        {
+                          $regexMatch: {
+                            input: "$data.Invoice Number",
+                            regex: "$$localField",
+                          },
+                        },
+                        {
+                          $regexMatch: {
+                            input: "$$localField",
+                            regex: "$data.Invoice Number",
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      $eq: ["$uniqueId", "$$detailsId"],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "resultcompletes",
+        },
+      },
+      {
+        $match: {
+          resultcompletes: {
+            $eq: [],
           },
         },
       },
       {
         $project: {
-          _id: 0,
-          data: 1,
-          diff: 1,
-          // first:1,
-          // second:1,
-          // result:1
+          // data: 1,
+          resultmaster: 0,
+          resultcompletes: 0,
         },
       },
     ]);
-    // res.send(MThreeCaseAgg);
 
+    const matchLTwoCaseData: any[] = [];
+    const matchMThreeCaseData: any[] = [];
+    for (let i = 0; i < LTwoAndMThreeAggregate?.length; i++) {
+      const closingBalanceString =
+        LTwoAndMThreeAggregate[i]?.data["Closing Balance"];
+
+      if (closingBalanceString) {
+        const closingBalanceWithoutCommas = closingBalanceString.replace(
+          /,/g,
+          ""
+        );
+        const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
+        if (closingBalanceNumeric) {
+          if (closingBalanceNumeric > 0) {
+            // M3
+            matchMThreeCaseData.push(LTwoAndMThreeAggregate[i]);
+          } else {
+            // L2
+            matchLTwoCaseData.push(LTwoAndMThreeAggregate[i]);
+          }
+        }
+      }
+    }
+    res.send({ matchLTwoCaseData, matchMThreeCaseData });
     // <---------------------------- CASE i AGGREGATE ---------------------------->
 
     const iCaseAgg = await Collection.aggregate([
@@ -1001,34 +1212,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
-    // const iCaseDataStore: any[] = [];
-    // let IClosingBalance: string | number = 0;
-    // for (let i = 0; i < iCaseAgg?.length; i++) {
-    //   const documentNumber = iCaseAgg[i]?.data["Document Number"];
-
-    //   if (
-    //     documentNumber &&
-    //     (documentNumber.startsWith("AAD") ||
-    //       documentNumber.endsWith("AAD") ||
-    //       documentNumber.includes("AAD"))
-    //   ) {
-    // iCaseDataStore.push(iCaseAgg[i]);
-
-    //     // CLOSING BALANCE 3RD FILE
-    //     const closingBalanceString = iCaseAgg[i]?.data["Closing Balance"];
-
-    //     if (closingBalanceString) {
-    //       const closingBalanceWithoutCommas = closingBalanceString.replace(
-    //         /,/g,
-    //         ""
-    //       );
-    //       const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
-    //       IClosingBalance = closingBalanceNumeric;
-    //     }
-    //   }
-    // }
-
-    // <---------------------------- CASE M1 INVOICE EMPTY AGGREGATE ---------------------------->
+    // <----------------------------  M5 INVOICE EMPTY AGGREGATE ---------------------------->
     const MCaseInvoiceEmpty = await vendorCollection.aggregate([
       [
         {
@@ -1066,7 +1250,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
         // },
       ],
     ]);
-    // <---------------------------- CASE L1 INVOICE EMPTY AGGREGATE ---------------------------->
+    // <----------------------------  L4 INVOICE EMPTY AGGREGATE ---------------------------->
     const LCaseInvoiceEmpty = await vendorCollection.aggregate([
       [
         {
@@ -1091,121 +1275,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
         },
       ],
     ]);
-    // <---------------------------- CASE P AND K ---------------------------->
-    // const matchPCaseData: any = [];
-
-    // const matchKCaseData: any = [];
-    // let isPCaseTrue: boolean = false;
-    // let isKCaseTrue: boolean = false;
-    // let pClosingBalance: string | number = 0;
-    // let kClosingBalance: string | number = 0;
-
-    //  BACK TO OPTIMAL VIA - ADDED INTO PIPELINE - WHAT ADDED ? - INCLUDES METHOD ON INVOICE NUMBER.
-    // for (let i = 0; i < data?.length; i++) {
-    //   //  MATCHING THE DOCUMENT TYPE.
-    //   const documentNumber = data[i].finalresult.data["Document Number"];
-    //   if (
-    //     documentNumber &&
-    //     (documentNumber.startsWith("PID") ||
-    //       documentNumber.endsWith("PID") ||
-    //       documentNumber.includes("PID"))
-    //   ) {
-    //     isPCaseTrue = true;
-    //     matchPCaseData.push(data[i]?.finalresult);
-
-    //     // CLOSING BALANCE
-
-    //     const closingBalanceString =
-    //       data[i].finalresult.data["Closing Balance"];
-
-    //     if (closingBalanceString) {
-    //       const closingBalanceWithoutCommas = closingBalanceString.replace(
-    //         /,/g,
-    //         ""
-    //       );
-    //       const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
-    //       pClosingBalance = closingBalanceNumeric;
-    //     }
-    //   } else if (
-    //     documentNumber &&
-    //     (documentNumber.startsWith("TDS") ||
-    //       documentNumber.endsWith("TDS") ||
-    //       documentNumber.includes("TDS"))
-    //   ) {
-    //     isKCaseTrue = true;
-    //     //
-    //     matchKCaseData.push(data[i]?.finalresult);
-
-    //     // CLOSING BALANCE
-    //     const closingBalanceString =
-    //       data[i].finalresult.data["Closing Balance"];
-
-    //     if (closingBalanceString) {
-    //       const closingBalanceWithoutCommas = closingBalanceString.replace(
-    //         /,/g,
-    //         ""
-    //       );
-    //       const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
-    //       kClosingBalance = closingBalanceNumeric;
-    //     }
-    //   }
-    // }
-
-    // const pCaseDataFlat = await matchPCaseData.flat();
-
-    // TEST K CASE - IF K CASE SUCCESS.
-    // const kCaseDataFlat = await matchKCaseData.flat();
-
-    // STORE INTO THE P CASE COLLECTION
-    if (matchPCaseData1) {
-      let idx: number = 1;
-      for (const item of matchPCaseData1) {
-        if (item?.data["Debit Amount(INR)"]) {
-          const pCaseInstance = await new PCase({
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data["Company Code"],
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Grn Number": item?.data["Grn Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          });
-
-          try {
-            await pCaseInstance.save();
-          } catch (error) {
-            return res.status(500).json({ error });
-          }
-        }
-      }
-    }
-
-    // STORE INTO K CASE COLLECTION.
-    if (matchKCaseData1) {
-      let idx: number = 1;
-      for (const item of matchKCaseData1) {
-        if (item?.data["Debit Amount(INR)"]) {
-          const kCaseInstance = await new KCase({
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data["Company Code"],
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Grn Number": item?.data["Grn Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          });
-          try {
-            await kCaseInstance.save();
-          } catch (error) {
-            return res.status(500).json({ error });
-          }
-        }
-      }
-    }
 
     // <---------------------------- CASE A ---------------------------->
     const ACaseFutureData: any[] = [];
@@ -1226,173 +1295,87 @@ export const dynamicReportGenerateController: RequestHandler = async (
       // break;
     }
 
-    // <---------------------------- CASE L AND M ---------------------------->
-    // const matchLCaseData: any = [];
-    // const matchMCaseData: any = [];
-    // let isLCaseTrue: boolean = false;
-    // let isMCaseTrue: boolean = false;
+    // <------------------- P ONE DATABASE ------------------------->
 
-    // for (let i = 0; i < CaseLAndM?.length; i++) {
-    //   const closingBalanceString =
-    //     CaseLAndM[i].combinedData.A.data["Closing Balance"];
-
-    //   // Step 1: Remove commas from the string
-    //   const closingBalanceWithoutCommas = closingBalanceString.replace(
-    //     /,/g,
-    //     ""
-    //   );
-
-    //   // Step 2: Convert the string to a numeric format
-    //   const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
-
-    //   if (
-    //     CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
-    //     CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
-    //     closingBalanceNumeric >= 0
-    //   ) {
-    //     // CREDIT AMOUNT
-    //     isMCaseTrue = true;
-    //     const filteredData = {
-    //       ...CaseLAndM[i].combinedData.A,
-    //       ACMatch: undefined,
-    //       ABMatch: undefined,
-    //     };
-    //     matchMCaseData.push(filteredData);
-    //   } else if (
-    //     CaseLAndM[i].combinedData.A.ACMatch?.length == 0 &&
-    //     CaseLAndM[i].combinedData.A.ABMatch?.length == 0 &&
-    //     closingBalanceNumeric < 0
-    //   ) {
-    //     // DEBIT AMOUNT
-    //     isLCaseTrue = true;
-    //     // matchLCaseData.push(...CaseLAndM[i].combinedData.A.ACMatch);
-    //     const filteredData = {
-    //       ...CaseLAndM[i].combinedData.A,
-    //       ACMatch: undefined,
-    //       ABMatch: undefined,
-    //     };
-    //     matchLCaseData.push(filteredData);
-    //   }
-    // }
-
-    // const LCaseDataFlat = await matchLCaseData.flat();
-    // const MCaseDataFlat = await matchMCaseData.flat();
-    // STORE INTO L CASE COLLECTION.
-    if (matchLCaseData1) {
+    if (matchPCaseData1) {
       let idx: number = 1;
-      for (const item of matchLCaseData1) {
-        const LCaseInstance = await new LCase({
+      for (const item of matchPCaseData1) {
+        if (item?.data["Debit Amount(INR)"]) {
+          const pCaseInstance = new PCase({
+            user: new mongoose.Types.ObjectId(_id),
+            uniqueId: recentIds?.masterId,
+            SNO: idx++,
+            "Company Code": item?.data["Company Code"],
+            "Document Number": item?.data["Document Number"],
+            "Document Date": item?.data["Document Date"],
+            "Invoice Number": item?.data["Invoice Number"],
+            "Grn Number": item?.data["Grn Number"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          });
+
+          try {
+            await pCaseInstance.save();
+          } catch (error) {
+            return res.status(500).json({ error });
+          }
+        }
+      }
+    }
+
+    // <-------------------- K ONE DATABASE ------------------------->
+    if (matchKCaseData1) {
+      let idx: number = 1;
+      for (const item of matchKCaseData1) {
+        if (item?.data["Debit Amount(INR)"]) {
+          const kCaseInstance = new KCase({
+            user: new mongoose.Types.ObjectId(_id),
+            uniqueId: recentIds?.masterId,
+            SNO: idx++,
+            "Company Code": item?.data["Company Code"],
+            "Document Number": item?.data["Document Number"],
+            "Document Date": item?.data["Document Date"],
+            "Invoice Number": item?.data["Invoice Number"],
+            "Grn Number": item?.data["Grn Number"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          });
+          try {
+            await kCaseInstance.save();
+          } catch (error) {
+            return res.status(500).json({ error });
+          }
+        }
+      }
+    }
+    // <--------------------- G ONE DATABASE  ---------------------------->
+    if (matchGCaseData1) {
+      let idx: number = 1;
+      for (const item of matchGCaseData1) {
+        const GCaseInstance = new GCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
-          "Company Code": item?.data["Company Code"],
-          "Vendor Code": item?.data["Vendor Code"],
-          "Document Number": item?.data["Document Number"],
-          "Document Date": item?.data["Document Date"],
-          "Invoice Number": item?.data["Invoice Number"],
-          Amount: item?.data["Closing Balance"],
+          "Company Code": item?.data?.["Company Code"] || "",
+          "Vendor Code": item?.data?.["Vendor Code"],
+          "Document Number": item?.data?.["Document Number"],
+          "Document Date": item?.data?.["Document Date"],
+          "Invoice Number": item?.data?.["Invoice Number"],
+          "Debit Amount(INR)": item?.data?.["Debit Amount(INR)"],
+          "Invoice Amount": item?.data?.["Invoice Amount"],
+          "Invoice Date": item?.data?.["Invoice Date"],
+          "Grn Number": item?.data?.["Grn Number"],
         });
         try {
-          await LCaseInstance.save();
+          await GCaseInstance.save();
         } catch (error) {
           return res.status(500).json({ error });
         }
       }
     }
-
-    // STORE INTO M CASE COLLECTION.
-    if (matchMCaseData1) {
-      let idx: number = 1;
-      for (const item of matchMCaseData1) {
-        const MCaseInstance = await new MCase({
-          user: new mongoose.Types.ObjectId(_id),
-          uniqueId: recentIds?.masterId,
-          SNO: idx++,
-          "Company Code": item?.data["Company Code"],
-          "Vendor Code": item?.data["Vendor Code"],
-          "Document Date": item?.data["Document Date"],
-          "Invoice Number": item?.data["Invoice Number"],
-          Amount: item?.data["Closing Balance"],
-          "Invoice Amount": item?.data["Invoice Amount"],
-        });
-        try {
-          await MCaseInstance.save();
-        } catch (error) {
-          return res.status(500).json({ error });
-        }
-      }
-    }
-
-    // <----------------------------  CASE L1 INVOICE EMPTY DATABASE  ---------------------------->
-
-    if (LCaseInvoiceEmpty) {
-      let idx: number = 1;
-      for (const item of LCaseInvoiceEmpty) {
-        const LCaseInstance = await new LOneCase({
-          user: new mongoose.Types.ObjectId(_id),
-          uniqueId: recentIds?.masterId,
-          SNO: idx++,
-          "Document Number": item?.data["Document Number"],
-          "Document Date": item?.data["Document Date"],
-          Amount: item?.data["Closing Balance"],
-          "Invoice Amount": item?.data["Invoice Amount"],
-        });
-        try {
-          await LCaseInstance.save();
-        } catch (error) {
-          return res.status(500).json({ error });
-        }
-      }
-    }
-    // <---------------------------- CASE M1 INVOICE EMPTY DATABASE  ---------------------------->
-
-    if (MCaseInvoiceEmpty) {
-      let idx: number = 1;
-      for (const item of MCaseInvoiceEmpty) {
-        const MCaseInstance = await new MOneCase({
-          user: new mongoose.Types.ObjectId(_id),
-          uniqueId: recentIds?.masterId,
-          SNO: idx++,
-          "Document Date": item?.data["Document Date"],
-          "Invoice Amount": item?.data["Invoice Amount"],
-          Amount: item?.data["Closing Balance"],
-        });
-        try {
-          await MCaseInstance.save();
-        } catch (error) {
-          return res.status(500).json({ error });
-        }
-      }
-    }
-
-    // <---------------------------- CASE M3 DATABASE  ---------------------------->
-
-    if (matchMThreeCaseData1) {
-      let idx: number = 1;
-      for (const item of matchMThreeCaseData1) {
-        const MThreeCaseInstance = await new MThreeCase({
-          user: new mongoose.Types.ObjectId(_id),
-          uniqueId: recentIds?.masterId,
-          SNO: idx++,
-          "Document Date": item?.data["Document Date"],
-          "Invoice Number": item?.data["Invoice Number"],
-          "Vendor Name": item?.data["Vendor Name"],
-          "Company Code": item?.data["Company Code"],
-          Amount: item?.data["Closing Balance"],
-          Difference: item?.diff,
-        });
-        try {
-          await MThreeCaseInstance.save();
-        } catch (error) {
-          return res.status(500).json({ error });
-        }
-      }
-    }
-    // <---------------------------- CASE I DATABASE  ---------------------------->
+    // <--------------------- I ONE DATABASE  ---------------------------->
     if (iCaseDataStore1) {
       let idx: number = 1;
       for (const item of iCaseDataStore1) {
-        const ICaseInstance = await new ICase({
+        const ICaseInstance = new ICase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
@@ -1411,11 +1394,196 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
-    // <---------------------------- CASE A DATABASE  ---------------------------->
+    // <--------------------- L ONE DATABASE ------------------------->
+    if (matchLCaseData1) {
+      let idx: number = 1;
+      for (const item of matchLCaseData1) {
+        const LCaseInstance = new LCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          Amount: item?.data["Closing Balance"],
+        });
+        try {
+          await LCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+
+    // <--------------------- M ONE DATABASE ------------------------->
+    if (matchMCaseData1) {
+      let idx: number = 1;
+      for (const item of matchMCaseData1) {
+        const MCaseInstance = new MCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          Amount: item?.data["Closing Balance"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+        });
+        try {
+          await MCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+
+    // L2
+    // <--------------------- L TWO DATABASE ------------------------->
+
+    if (matchLTwoCaseData) {
+      let idx: number = 1;
+      for (const item of matchLTwoCaseData) {
+        const LTwoCaseInstance = new LTwoCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+          Amount: item?.data["Closing Balance"],
+        });
+        try {
+          await LTwoCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+
+    // M3
+    // <--------------------- M THREE DATABASE ------------------------->
+    if (matchMThreeCaseData) {
+      let idx: number = 1;
+      for (const item of matchMThreeCaseData) {
+        const MThreeCaseInstance = new MThreeCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+          Amount: item?.data["Closing Balance"],
+        });
+        try {
+          await MThreeCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+    // <---------------------------- L4 INVOICE EMPTY DATABASE  ---------------------------->
+
+    if (LCaseInvoiceEmpty) {
+      let idx: number = 1;
+      for (const item of LCaseInvoiceEmpty) {
+        const LCaseInstance = new LOneCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          Amount: item?.data["Closing Balance"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+        });
+        try {
+          await LCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+    // <---------------------------- M5 INVOICE EMPTY DATABASE  ---------------------------->
+
+    if (MCaseInvoiceEmpty) {
+      let idx: number = 1;
+      for (const item of MCaseInvoiceEmpty) {
+        const MCaseInstance = new MOneCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Date": item?.data["Document Date"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+          Amount: item?.data["Closing Balance"],
+        });
+        try {
+          await MCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+
+    // <---------------------------- M2 F > S DATABASE  ---------------------------->
+
+    if (mTwoAggregate) {
+      let idx: number = 1;
+      for (const item of mTwoAggregate) {
+        const MTwoCaseInstance = new MTwoCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Vendor Name": item?.data["Vendor Name"],
+          "Company Code": item?.data["Company Code"],
+          Amount: item?.data["Closing Balance"],
+          Difference: item?.diffABMatch,
+        });
+        try {
+          await MTwoCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+    // <---------------------------- M4 F < S DATABASE  ---------------------------->
+
+    if (matchMCaseData1) {
+      let idx: number = 1;
+      for (const item of matchMCaseData1) {
+        const MTwoCaseInstance = new MTwoCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Vendor Name": item?.data["Vendor Name"],
+          "Company Code": item?.data["Company Code"],
+          Amount: item?.data["Closing Balance"],
+          Difference: item?.diff,
+        });
+        try {
+          await MTwoCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+
+    // <---------------------------- A DATABASE  ---------------------------->
     if (ACaseFutureData) {
       let idx: number = 1;
       for (const item of ACaseFutureData) {
-        const ACaseInstance = await new ACase({
+        const ACaseInstance = new ACase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
@@ -1439,11 +1607,11 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
-    // <---------------------------- CASE F DATABASE  ---------------------------->
+    // <---------------------------- F DATABASE  ---------------------------->
     if (CaseF) {
       let idx: number = 1;
       for (const item of CaseF) {
-        const FCaseInstance = await new FCase({
+        const FCaseInstance = new FCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
@@ -1461,32 +1629,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
         });
         try {
           await FCaseInstance.save();
-        } catch (error) {
-          return res.status(500).json({ error });
-        }
-      }
-    }
-
-    // <---------------------------- CASE G DATABASE  ---------------------------->
-    if (matchGCaseData1) {
-      let idx: number = 1;
-      for (const item of matchGCaseData1) {
-        const GCaseInstance = await new GCase({
-          user: new mongoose.Types.ObjectId(_id),
-          uniqueId: recentIds?.masterId,
-          SNO: idx++,
-          "Company Code": item?.data?.["Company Code"] || "",
-          "Vendor Code": item?.data?.["Vendor Code"],
-          "Document Number": item?.data?.["Document Number"],
-          "Document Date": item?.data?.["Document Date"],
-          "Invoice Number": item?.data?.["Invoice Number"],
-          "Debit Amount(INR)": item?.data?.["Debit Amount(INR)"],
-          "Invoice Amount": item?.data?.["Invoice Amount"],
-          "Invoice Date": item?.data?.["Invoice Date"],
-          "Grn Number": item?.data?.["Grn Number"],
-        });
-        try {
-          await GCaseInstance.save();
         } catch (error) {
           return res.status(500).json({ error });
         }
@@ -1512,7 +1654,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     return res.status(200).json({
       message: "ok",
-      data: data,
       success: "ok",
     });
   } catch (error) {

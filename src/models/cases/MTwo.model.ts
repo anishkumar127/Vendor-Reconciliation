@@ -15,6 +15,6 @@ const yourSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const MThreeCase = mongoose.model("MThreeCase", yourSchema);
+const MwoCase = mongoose.model("MwoCase", yourSchema);
 
-export default MThreeCase;
+export default MwoCase;
