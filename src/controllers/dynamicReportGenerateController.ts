@@ -15,7 +15,12 @@ import LTwoCase from "../models/cases/LTwoCase.model";
 import MThreeCase from "../models/cases/MThreeCase.model";
 import LFourCase from "../models/cases/L/LFourCase.model";
 import MFiveCase from "../models/cases/M/MFiveCase.model";
-import MFourCase from "../models/cases/M/MFour.Mode";
+import MFourCase from "../models/cases/M/MFour.Model";
+import PTwoCase from "../models/cases/right/PTwoCase.model";
+import KTwoCase from "../models/cases/right/KTwoCase.model";
+import GTwoCase from "../models/cases/right/GTwoCase.model";
+import ITwoCase from "../models/cases/right/ITwoCase.model";
+import LThreeCase from "../models/cases/right/LThreeCase.model";
 
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
@@ -474,72 +479,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
-    // <---------------------------- CASE A AGGREGATION ---------------------------->
-
-    const ACaseData = await vendorCollection.aggregate([
-      {
-        $match: {
-          uniqueId: recentIds?.vendorId,
-        },
-      },
-      {
-        $lookup: {
-          from: Collection.collection.name,
-          let: {
-            invoiceNumber: "$data.Invoice Number",
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    {
-                      $eq: ["$data.Invoice Number", "$$invoiceNumber"],
-                    },
-                    {
-                      $eq: ["$uniqueId", recentIds?.masterId],
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-          as: "result",
-        },
-      },
-      {
-        $match: {
-          result: {
-            $eq: [],
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: lastCollection.collection.name,
-          localField: "data.Invoice Number",
-          foreignField: "data.Invoice Number",
-          as: "resultFromCompletes",
-        },
-      },
-      {
-        $unwind: {
-          path: "$resultFromCompletes",
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          resultFromCompletes: 1,
-        },
-      },
-      {
-        $match: {
-          "resultFromCompletes.uniqueId": recentIds?.detailsId,
-        },
-      },
-    ]);
-
     // <---------------------------- CASE F AGGREGATION ---------------------------->
 
     const CaseF = await Collection.aggregate([
@@ -571,6 +510,8 @@ export const dynamicReportGenerateController: RequestHandler = async (
         },
       },
     ]);
+
+    // <---------------------------- CASE L2 - M3 AGGREGATION ---------------------------->
 
     const LTwoAndMThreeAggregate = await vendorCollection.aggregate([
       {
@@ -694,6 +635,319 @@ export const dynamicReportGenerateController: RequestHandler = async (
       },
     ]);
 
+    // <---------------------------- CASE A - AND - LEFT SIDE BIG [P2,K2,G2,I2 M4,L3] AGGREGATION ---------------------------->
+
+    const ACase_And_RightSideAggregation = await vendorCollection.aggregate([
+      {
+        $match: {
+          "data.Invoice Number": {
+            $exists: true,
+            $ne: "", // This ensures that "data.Invoice Number" is not an empty string
+            $regex: /\S+/, // This ensures that "data.Invoice Number" is not just whitespace
+          },
+          uniqueId: recentIds?.vendorId,
+        },
+      },
+      {
+        $lookup: {
+          from: Collection.collection.name,
+          let: {
+            localField: "$data.Invoice Number",
+            masterId: recentIds?.masterId,
+          },
+          pipeline: [
+            {
+              $match: {
+                "data.Invoice Number": {
+                  $exists: true,
+                  $ne: "", // This ensures that "data.Invoice Number" is not an empty string
+                  $regex: /\S+/, // This ensures that "data.Invoice Number" is not just whitespace
+                },
+                $expr: {
+                  $and: [
+                    {
+                      $or: [
+                        {
+                          $regexMatch: {
+                            input: "$data.Invoice Number",
+                            regex: "$$localField",
+                          },
+                        },
+                        {
+                          $regexMatch: {
+                            input: "$$localField",
+                            regex: "$data.Invoice Number",
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      $eq: ["$uniqueId", "$$masterId"],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "resultmaster",
+        },
+      },
+      {
+        $match: {
+          resultmaster: {
+            $eq: [],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: lastCollection.collection.name,
+          let: {
+            localField: "$data.Invoice Number",
+            detailsId: recentIds?.detailsId,
+          },
+          pipeline: [
+            {
+              $match: {
+                "data.Invoice Number": {
+                  $exists: true,
+                  $ne: "", // This ensures that "data.Invoice Number" is not an empty string
+                  $regex: /\S+/, // This ensures that "data.Invoice Number" is not just whitespace
+                },
+                $expr: {
+                  $and: [
+                    {
+                      $or: [
+                        {
+                          $regexMatch: {
+                            input: "$data.Invoice Number",
+                            regex: "$$localField",
+                          },
+                        },
+                        {
+                          $regexMatch: {
+                            input: "$$localField",
+                            regex: "$data.Invoice Number",
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      $eq: ["$uniqueId", "$$detailsId"],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "resultcompletes",
+        },
+      },
+      {
+        $match: {
+          resultcompletes: {
+            $ne: [],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          resultcompletes: 1,
+          balance: {
+            $toDouble: {
+              $replaceAll: {
+                input: "$data.Closing Balance",
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$resultcompletes",
+        },
+      },
+
+      // {
+      //   $replaceRoot: { newRoot: "$resultcompletes" },
+      // },
+    ]);
+
+    const ACaseFutureData: any[] = [];
+
+    const matchPCaseDataTwo: any[] = [];
+    const matchKCaseDataTwo: any[] = [];
+    const matchGCaseDataTwo: any[] = [];
+    const iCaseDataStoreTwo: any[] = [];
+
+    const matchLCaseDataTwo: any[] = [];
+    const matchMCaseDataTwo: any[] = [];
+
+    for (let i = 0; i < ACase_And_RightSideAggregation?.length; i++) {
+      if (
+        ACase_And_RightSideAggregation[i]?.resultcompletes &&
+        ACase_And_RightSideAggregation[i]?.resultcompletes?.data
+      ) {
+        const documentDate = new Date(
+          ACase_And_RightSideAggregation[i]?.resultcompletes.data?.[
+            "Document Date"
+          ]
+        );
+        const currentDate = new Date();
+
+        // FUTURE DATE - A CASE.
+        if (documentDate > currentDate) {
+          ACaseFutureData.push(
+            ACase_And_RightSideAggregation[i]?.resultcompletes
+          );
+        } else if (documentDate <= currentDate) {
+          // PASTE DATE.
+          const balance = ACase_And_RightSideAggregation[i]?.balance;
+          const documentNumber =
+            ACase_And_RightSideAggregation[i]?.resultcompletes?.data[
+              "Document Number"
+            ];
+          const paymentDocument =
+            ACase_And_RightSideAggregation[i]?.resultcompletes?.data[
+              "Payment Document"
+            ];
+          // I CASE
+          let IClosingBalance1: string | number = 0;
+          let pClosingBalance1: string | number = 0;
+          let kClosingBalance1: string | number = 0;
+          let GClosingBalance1: string | number = 0;
+
+          if (
+            documentNumber &&
+            (documentNumber.startsWith("AAD") ||
+              documentNumber.endsWith("AAD") ||
+              documentNumber.includes("AAD"))
+          ) {
+            iCaseDataStoreTwo.push(
+              ACase_And_RightSideAggregation[i]?.resultcompletes
+            );
+            // CLOSING BALANCE 3RD FILE
+            const closingBalanceString =
+              ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
+                "Debit Amount(INR)"
+              ];
+
+            if (closingBalanceString) {
+              const closingBalanceWithoutCommas = closingBalanceString.replace(
+                /,/g,
+                ""
+              );
+              const closingBalanceNumeric = parseFloat(
+                closingBalanceWithoutCommas
+              );
+              IClosingBalance1 = closingBalanceNumeric;
+            }
+          }
+          // P CASE
+          if (
+            documentNumber &&
+            (documentNumber.startsWith("PID") ||
+              documentNumber.endsWith("PID") ||
+              documentNumber.includes("PID"))
+          ) {
+            matchPCaseDataTwo.push(
+              ACase_And_RightSideAggregation[i]?.resultcompletes
+            );
+            // Debit Amount(INR) 3RD FILE
+            const closingBalanceString =
+              ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
+                "Debit Amount(INR)"
+              ];
+
+            if (closingBalanceString) {
+              const closingBalanceWithoutCommas = closingBalanceString.replace(
+                /,/g,
+                ""
+              );
+              const closingBalanceNumeric = parseFloat(
+                closingBalanceWithoutCommas
+              );
+              pClosingBalance1 = closingBalanceNumeric;
+            }
+          }
+          // K CASE
+          if (
+            documentNumber &&
+            (documentNumber.startsWith("TDS") ||
+              documentNumber.endsWith("TDS") ||
+              documentNumber.includes("TDS"))
+          ) {
+            matchKCaseDataTwo.push(
+              ACase_And_RightSideAggregation[i]?.resultcompletes
+            );
+            // Debit Amount(INR) 3RD FILE
+            const closingBalanceString =
+              ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
+                "Debit Amount(INR)"
+              ];
+
+            if (closingBalanceString) {
+              const closingBalanceWithoutCommas = closingBalanceString.replace(
+                /,/g,
+                ""
+              );
+              const closingBalanceNumeric = parseFloat(
+                closingBalanceWithoutCommas
+              );
+              kClosingBalance1 = closingBalanceNumeric;
+            }
+          }
+          // G CASE
+          if (
+            paymentDocument &&
+            paymentDocument !== "" &&
+            paymentDocument !== 0 &&
+            paymentDocument !== "0"
+          ) {
+            const closingBalanceString =
+              ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
+                "Debit Amount(INR)"
+              ];
+
+            if (closingBalanceString) {
+              const closingBalanceWithoutCommas = closingBalanceString.replace(
+                /,/g,
+                ""
+              );
+              const closingBalanceNumeric = parseFloat(
+                closingBalanceWithoutCommas
+              );
+              GClosingBalance1 = closingBalanceNumeric;
+              matchGCaseDataTwo.push(
+                ACase_And_RightSideAggregation[i]?.resultcompletes
+              );
+            }
+          }
+
+          // SUM P2 K2 G2 I2  ==  DIFF ( SECOND  - FIRST) + ;
+          const sum =
+            IClosingBalance1 +
+            pClosingBalance1 +
+            kClosingBalance1 +
+            GClosingBalance1;
+
+          if (sum > balance) {
+            matchMCaseDataTwo.push(
+              ACase_And_RightSideAggregation[i]?.resultcompletes
+            );
+          } else if (sum < balance) {
+            matchLCaseDataTwo.push(
+              ACase_And_RightSideAggregation[i]?.resultcompletes
+            );
+          }
+        }
+      }
+    }
+
+    // L2 M3
     const matchLTwoCaseData: any[] = [];
     const matchMThreeCaseData: any[] = [];
     for (let i = 0; i < LTwoAndMThreeAggregate?.length; i++) {
@@ -783,23 +1037,20 @@ export const dynamicReportGenerateController: RequestHandler = async (
     ]);
 
     // <---------------------------- CASE A ---------------------------->
-    const ACaseFutureData: any[] = [];
+    // const ACaseFutureData: any[] = [];
 
-    for (const caseData of ACaseData) {
-      console.log(
-        new Date(caseData?.resultFromCompletes?.data?.["Document Date"])
-      );
+    // for (const caseData of ACaseData) {
+    //   const documentDate = new Date(
+    //     caseData?.resultFromCompletes?.data?.["Document Date"]
+    //   );
+    //   const currentDate = new Date();
 
-      const documentDate = new Date(
-        caseData?.resultFromCompletes?.data?.["Document Date"]
-      );
-      const currentDate = new Date();
+    //   if (documentDate > currentDate) {
+    //     ACaseFutureData.push(caseData?.resultFromCompletes);
+    //   }
+    // }
 
-      if (documentDate > currentDate) {
-        ACaseFutureData.push(caseData?.resultFromCompletes);
-      }
-    }
-
+    // <-------------------------- ONE LEFT ------------------------------>
     // <------------------- P ONE DATABASE ------------------------->
 
     if (matchPCaseData1) {
@@ -945,6 +1196,154 @@ export const dynamicReportGenerateController: RequestHandler = async (
       }
     }
 
+    // <-------------------------- TWO RIGHT ------------------------------>
+    // <------------------- P TWO DATABASE ------------------------->
+
+    if (matchPCaseDataTwo) {
+      let idx: number = 1;
+      for (const item of matchPCaseDataTwo) {
+        if (item?.data["Debit Amount(INR)"]) {
+          const pCaseInstance = new PTwoCase({
+            user: new mongoose.Types.ObjectId(_id),
+            uniqueId: recentIds?.masterId,
+            SNO: idx++,
+            "Company Code": item?.data["Company Code"],
+            "Document Number": item?.data["Document Number"],
+            "Document Date": item?.data["Document Date"],
+            "Invoice Number": item?.data["Invoice Number"],
+            "Grn Number": item?.data["Grn Number"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          });
+
+          try {
+            await pCaseInstance.save();
+          } catch (error) {
+            return res.status(500).json({ error });
+          }
+        }
+      }
+    }
+
+    // <-------------------- K TWO DATABASE ------------------------->
+    if (matchKCaseDataTwo) {
+      let idx: number = 1;
+      for (const item of matchKCaseDataTwo) {
+        if (item?.data["Debit Amount(INR)"]) {
+          const kCaseInstance = new KTwoCase({
+            user: new mongoose.Types.ObjectId(_id),
+            uniqueId: recentIds?.masterId,
+            SNO: idx++,
+            "Company Code": item?.data["Company Code"],
+            "Document Number": item?.data["Document Number"],
+            "Document Date": item?.data["Document Date"],
+            "Invoice Number": item?.data["Invoice Number"],
+            "Grn Number": item?.data["Grn Number"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          });
+          try {
+            await kCaseInstance.save();
+          } catch (error) {
+            return res.status(500).json({ error });
+          }
+        }
+      }
+    }
+    // <--------------------- G TWO DATABASE  ---------------------------->
+    if (matchGCaseDataTwo) {
+      let idx: number = 1;
+      for (const item of matchGCaseDataTwo) {
+        const GCaseInstance = new GTwoCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data?.["Company Code"] || "",
+          "Vendor Code": item?.data?.["Vendor Code"],
+          "Document Number": item?.data?.["Document Number"],
+          "Document Date": item?.data?.["Document Date"],
+          "Invoice Number": item?.data?.["Invoice Number"],
+          "Debit Amount(INR)": item?.data?.["Debit Amount(INR)"],
+          "Invoice Amount": item?.data?.["Invoice Amount"],
+          "Invoice Date": item?.data?.["Invoice Date"],
+          "Grn Number": item?.data?.["Grn Number"],
+        });
+        try {
+          await GCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+    // <--------------------- I TWO DATABASE  ---------------------------->
+    if (iCaseDataStoreTwo) {
+      let idx: number = 1;
+      for (const item of iCaseDataStoreTwo) {
+        const ICaseInstance = new ITwoCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Due Date": item?.data["Due Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          Amount: item?.data["Debit Amount(INR)"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+        });
+        try {
+          await ICaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+
+    // <--------------------- L TWO DATABASE ------------------------->
+    if (matchLCaseDataTwo) {
+      let idx: number = 1;
+      for (const item of matchLCaseDataTwo) {
+        const LCaseInstance = new LThreeCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          Amount: item?.data["Closing Balance"],
+        });
+        try {
+          await LCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+
+    // <--------------------- M TWO DATABASE ------------------------->
+    if (matchMCaseDataTwo) {
+      let idx: number = 1;
+      for (const item of matchMCaseDataTwo) {
+        const MCaseInstance = new MFourCase({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Vendor Code": item?.data["Vendor Code"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          Amount: item?.data["Closing Balance"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+        });
+        try {
+          await MCaseInstance.save();
+        } catch (error) {
+          return res.status(500).json({ error });
+        }
+      }
+    }
+
+    // OTHER
+
     // L2
     // <--------------------- L TWO DATABASE ------------------------->
 
@@ -1052,29 +1451,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
           "Company Code": item?.data["Company Code"],
           Amount: item?.data["Closing Balance"],
           Difference: item?.diffABMatch,
-        });
-        try {
-          await MTwoCaseInstance.save();
-        } catch (error) {
-          return res.status(500).json({ error });
-        }
-      }
-    }
-    // <---------------------------- M4 F < S DATABASE  ---------------------------->
-
-    if (matchMCaseData1) {
-      let idx: number = 1;
-      for (const item of matchMCaseData1) {
-        const MTwoCaseInstance = new MFourCase({
-          user: new mongoose.Types.ObjectId(_id),
-          uniqueId: recentIds?.masterId,
-          SNO: idx++,
-          "Document Date": item?.data["Document Date"],
-          "Invoice Number": item?.data["Invoice Number"],
-          "Vendor Name": item?.data["Vendor Name"],
-          "Company Code": item?.data["Company Code"],
-          Amount: item?.data["Closing Balance"],
-          Difference: item?.diff,
         });
         try {
           await MTwoCaseInstance.save();

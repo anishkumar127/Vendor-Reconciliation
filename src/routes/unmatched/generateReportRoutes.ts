@@ -4,10 +4,14 @@ import {
   getACaseGeneratedReport,
   getFCaseGeneratedReport,
   getGCaseGeneratedReport,
+  getGTwoCaseGeneratedReport,
   getICaseGeneratedReport,
+  getITwoCaseGeneratedReport,
   getKCaseGeneratedReport,
+  getKTwoCaseGeneratedReport,
   getLCaseGeneratedReport,
   getLFourCaseGeneratedReport,
+  getLThreeCaseGeneratedReport,
   getLTwoCaseGeneratedReport,
   getMCaseGeneratedReport,
   getMFiveCaseGeneratedReport,
@@ -15,6 +19,7 @@ import {
   getMThreeCaseGeneratedReport,
   getMTwoCaseGeneratedReport,
   getPCaseGeneratedReport,
+  getPTwoCaseGeneratedReport,
 } from "../../controllers/unmatched-controllers/generateCaseController";
 const router = express.Router();
 
@@ -54,10 +59,30 @@ router.get("/m-three-case", authenticateToken, getMThreeCaseGeneratedReport);
 // L4 CASE REPORT ROUTE
 router.get("/l-four-case", authenticateToken, getLFourCaseGeneratedReport);
 
-// M4 CASE REPORT ROUTE
-router.get("/m-four-case", authenticateToken, getMFourCaseGeneratedReport);
+// // M4 CASE REPORT ROUTE
+// router.get("/m-four-case", authenticateToken, getMFourCaseGeneratedReport);
 
 // M5 CASE REPORT ROUTE
 router.get("/m-five-case", authenticateToken, getMFiveCaseGeneratedReport);
+
+// RIGHT
+
+// P CASE REPORT ROUTE
+router.get("/p-two-case", authenticateToken, getPTwoCaseGeneratedReport);
+
+// K CASE REPORT ROUTE
+router.get("/k-two-case", authenticateToken, getKTwoCaseGeneratedReport);
+
+// G CASE REPORT ROUTE
+router.get("/g-two-case", authenticateToken, getGTwoCaseGeneratedReport);
+
+// I CASE REPORT ROUTE
+router.get("/i-two-case", authenticateToken, getITwoCaseGeneratedReport);
+
+// L CASE REPORT ROUTE
+router.get("/l-three-case", authenticateToken, getLThreeCaseGeneratedReport);
+
+// M CASE REPORT ROUTE
+router.get("/m-four-case", authenticateToken, getMFourCaseGeneratedReport);
 
 export default router;

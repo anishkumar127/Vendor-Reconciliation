@@ -13,8 +13,13 @@ import LTwoCase from "../../models/cases/LTwoCase.model";
 import MThreeCase from "../../models/cases/MThreeCase.model";
 import LFourCase from "../../models/cases/L/LFourCase.model";
 import MFiveCase from "../../models/cases/M/MFiveCase.model";
-import MFourCase from "../../models/cases/M/MFour.Mode";
+import MFourCase from "../../models/cases/M/MFour.Model";
 import MTwoCase from "../../models/cases/MTwoCase.model";
+import PTwoCase from "../../models/cases/right/PTwoCase.model";
+import KTwoCase from "../../models/cases/right/KTwoCase.model";
+import GTwoCase from "../../models/cases/right/GTwoCase.model";
+import ITwoCase from "../../models/cases/right/ITwoCase.model";
+import LThreeCase from "../../models/cases/right/LThreeCase.model";
 
 //  P ONE CASE
 
@@ -333,11 +338,6 @@ export const getMTwoCaseGeneratedReport: RequestHandler = async (req, res) => {
     return res.status(404).json({ error: "no recent ids present." });
 
   try {
-    // const pCaseReport = await PCase.find({ user: _id ,})
-    //   .sort({ createdAt: -1 })
-    //   .limit(1)
-    //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
-
     // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
     const mCaseReport = await MTwoCase.find({
       user: _id,
@@ -442,49 +442,49 @@ export const getLFourCaseGeneratedReport: RequestHandler = async (req, res) => {
   }
 };
 
-// M4 FOUR CASE
+// // M4 FOUR CASE
 
-export const getMFourCaseGeneratedReport: RequestHandler = async (req, res) => {
-  const token = (req as any)?.token;
-  if (!token)
-    return res.status(401).json({ error: "you are not authenticated" });
+// export const getMFourCaseGeneratedReport: RequestHandler = async (req, res) => {
+//   const token = (req as any)?.token;
+//   if (!token)
+//     return res.status(401).json({ error: "you are not authenticated" });
 
-  const { _id, email }: any = await getUser(token);
+//   const { _id, email }: any = await getUser(token);
 
-  if (!_id || !email)
-    return res.status(401).json({ error: "user not authenticated!" });
+//   if (!_id || !email)
+//     return res.status(401).json({ error: "user not authenticated!" });
 
-  const recentIds = await RecentIds.findOne({
-    user: _id,
-  });
+//   const recentIds = await RecentIds.findOne({
+//     user: _id,
+//   });
 
-  if (!recentIds)
-    return res.status(404).json({ error: "no recent ids present." });
+//   if (!recentIds)
+//     return res.status(404).json({ error: "no recent ids present." });
 
-  try {
-    // const pCaseReport = await PCase.find({ user: _id ,})
-    //   .sort({ createdAt: -1 })
-    //   .limit(1)
-    //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
+//   try {
+//     // const pCaseReport = await PCase.find({ user: _id ,})
+//     //   .sort({ createdAt: -1 })
+//     //   .limit(1)
+//     //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
 
-    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
-    const mCaseReport = await MFourCase.find({
-      user: _id,
-      uniqueId: recentIds?.masterId,
-    }).select({
-      updatedAt: 0,
-      createdAt: 0,
-      user: 0,
-      _id: 0,
-      __v: 0,
-      uniqueId: 0,
-    });
+//     // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+//     const mCaseReport = await MFourCase.find({
+//       user: _id,
+//       uniqueId: recentIds?.masterId,
+//     }).select({
+//       updatedAt: 0,
+//       createdAt: 0,
+//       user: 0,
+//       _id: 0,
+//       __v: 0,
+//       uniqueId: 0,
+//     });
 
-    return res.status(200).json({ data: mCaseReport });
-  } catch (error) {
-    return res.status(500).json({ error: "Failed to retrieve MCase report" });
-  }
-};
+//     return res.status(200).json({ data: mCaseReport });
+//   } catch (error) {
+//     return res.status(500).json({ error: "Failed to retrieve MCase report" });
+//   }
+// };
 
 // M5 FIVE CASE
 
@@ -604,5 +604,269 @@ export const getACaseGeneratedReport: RequestHandler = async (req, res) => {
     return res.status(200).json({ data: aCaseReport });
   } catch (error) {
     return res.status(500).json({ error: "Failed to retrieve ACase report" });
+  }
+};
+
+// RIGHT P2 K2 G2 I2 L3 M4
+
+//  P ONE CASE
+
+export const getPTwoCaseGeneratedReport: RequestHandler = async (req, res) => {
+  const token = (req as any)?.token;
+  if (!token)
+    return res.status(401).json({ error: "you are not authenticated" });
+
+  const { _id, email }: any = await getUser(token);
+
+  if (!_id || !email)
+    return res.status(401).json({ error: "user not authenticated!" });
+
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(404).json({ error: "no recent ids present." });
+
+  try {
+    // const pCaseReport = await PCase.find({ user: _id ,})
+    //   .sort({ createdAt: -1 })
+    //   .limit(1)
+    //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
+
+    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+    const pCaseReport = await PTwoCase.find({
+      user: _id,
+      uniqueId: recentIds?.masterId,
+    }).select({
+      updatedAt: 0,
+      createdAt: 0,
+      user: 0,
+      _id: 0,
+      __v: 0,
+      uniqueId: 0,
+    });
+
+    return res.status(200).json({ data: pCaseReport });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve PCase report" });
+  }
+};
+
+//  K TWO CASE
+
+export const getKTwoCaseGeneratedReport: RequestHandler = async (req, res) => {
+  const token = (req as any)?.token;
+  if (!token)
+    return res.status(401).json({ error: "you are not authenticated" });
+
+  const { _id, email }: any = await getUser(token);
+
+  if (!_id || !email)
+    return res.status(401).json({ error: "user not authenticated!" });
+
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(404).json({ error: "no recent ids present." });
+
+  try {
+    // const pCaseReport = await PCase.find({ user: _id ,})
+    //   .sort({ createdAt: -1 })
+    //   .limit(1)
+    //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
+
+    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+    const kCaseReport = await KTwoCase.find({
+      user: _id,
+      uniqueId: recentIds?.masterId,
+      // 'Debit Amount(INR)': { $ne: null, $ne: undefined, $ne: "" }
+    }).select({
+      updatedAt: 0,
+      createdAt: 0,
+      user: 0,
+      _id: 0,
+      __v: 0,
+      uniqueId: 0,
+    });
+
+    return res.status(200).json({ data: kCaseReport });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve PCase report" });
+  }
+};
+
+//  G TWO CASE
+export const getGTwoCaseGeneratedReport: RequestHandler = async (req, res) => {
+  const token = (req as any)?.token;
+  if (!token)
+    return res.status(401).json({ error: "you are not authenticated" });
+
+  const { _id, email }: any = await getUser(token);
+
+  if (!_id || !email)
+    return res.status(401).json({ error: "user not authenticated!" });
+
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(404).json({ error: "no recent ids present." });
+
+  try {
+    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+    const gCaseReport = await GTwoCase.find({
+      user: _id,
+      uniqueId: recentIds?.masterId,
+    }).select({
+      updatedAt: 0,
+      createdAt: 0,
+      user: 0,
+      _id: 0,
+      __v: 0,
+      uniqueId: 0,
+    });
+
+    return res.status(200).json({ data: gCaseReport });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve GCase report" });
+  }
+};
+
+// I TWO CASE
+
+export const getITwoCaseGeneratedReport: RequestHandler = async (req, res) => {
+  const token = (req as any)?.token;
+  if (!token)
+    return res.status(401).json({ error: "you are not authenticated" });
+
+  const { _id, email }: any = await getUser(token);
+
+  if (!_id || !email)
+    return res.status(401).json({ error: "user not authenticated!" });
+
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(404).json({ error: "no recent ids present." });
+
+  try {
+    // const pCaseReport = await PCase.find({ user: _id ,})
+    //   .sort({ createdAt: -1 })
+    //   .limit(1)
+    //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
+
+    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+    const iCaseReport = await ITwoCase.find({
+      user: _id,
+      uniqueId: recentIds?.masterId,
+    }).select({
+      updatedAt: 0,
+      createdAt: 0,
+      user: 0,
+      _id: 0,
+      __v: 0,
+      uniqueId: 0,
+    });
+
+    return res.status(200).json({ data: iCaseReport });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve iCase report" });
+  }
+};
+
+// L THREE CASE
+
+export const getLThreeCaseGeneratedReport: RequestHandler = async (
+  req,
+  res
+) => {
+  const token = (req as any)?.token;
+  if (!token)
+    return res.status(401).json({ error: "you are not authenticated" });
+
+  const { _id, email }: any = await getUser(token);
+
+  if (!_id || !email)
+    return res.status(401).json({ error: "user not authenticated!" });
+
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(404).json({ error: "no recent ids present." });
+
+  try {
+    // const pCaseReport = await PCase.find({ user: _id ,})
+    //   .sort({ createdAt: -1 })
+    //   .limit(1)
+    //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
+
+    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+    const LCaseReport = await LThreeCase.find({
+      user: _id,
+      uniqueId: recentIds?.masterId,
+    }).select({
+      updatedAt: 0,
+      createdAt: 0,
+      user: 0,
+      _id: 0,
+      __v: 0,
+      uniqueId: 0,
+    });
+
+    return res.status(200).json({ data: LCaseReport });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve LCase report" });
+  }
+};
+
+// M FOUR CASE
+
+export const getMFourCaseGeneratedReport: RequestHandler = async (req, res) => {
+  const token = (req as any)?.token;
+  if (!token)
+    return res.status(401).json({ error: "you are not authenticated" });
+
+  const { _id, email }: any = await getUser(token);
+
+  if (!_id || !email)
+    return res.status(401).json({ error: "user not authenticated!" });
+
+  const recentIds = await RecentIds.findOne({
+    user: _id,
+  });
+
+  if (!recentIds)
+    return res.status(404).json({ error: "no recent ids present." });
+
+  try {
+    // const pCaseReport = await PCase.find({ user: _id ,})
+    //   .sort({ createdAt: -1 })
+    //   .limit(1)
+    //   .select({ updatedAt: 0, createdAt: 0, user: 0, _id: 0, __v: 0 });
+
+    // WITHOUT SORTING THE BASED ON RECENT MASTER ID THE RECENT REPORT DOWNLOAD.
+    const mCaseReport = await MFourCase.find({
+      user: _id,
+      uniqueId: recentIds?.masterId,
+    }).select({
+      updatedAt: 0,
+      createdAt: 0,
+      user: 0,
+      _id: 0,
+      __v: 0,
+      uniqueId: 0,
+    });
+
+    return res.status(200).json({ data: mCaseReport });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve MCase report" });
   }
 };
