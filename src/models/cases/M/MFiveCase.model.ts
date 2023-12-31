@@ -6,15 +6,17 @@ const yourSchema = new mongoose.Schema(
     uniqueId: { type: String, required: true },
     SNO: { type: Number },
     "Company Code": { type: String, required: false },
-    "Vendor Name": { type: String, required: false },
+    // "Vendor Code": { type: String, required: false },
+    Year: { type: String, required: false },
     "Document Date": { type: String, required: false },
     "Invoice Number": { type: String, required: false },
-    Difference: { type: String, required: false },
+    "Debit Amount(INR)": { type: String },
+    "Invoice Amount": { type: String, required: false },
     Amount: { type: String },
   },
   { timestamps: true }
 );
 
-const MwoCase = mongoose.model("MwoCase", yourSchema);
+const MFiveCase = mongoose.model("MFiveCase", yourSchema);
 
-export default MwoCase;
+export default MFiveCase;

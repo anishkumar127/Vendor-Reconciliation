@@ -9,12 +9,13 @@ import MCase from "../models/cases/MCase.model";
 import FCase from "../models/cases/FCase.model";
 import GCase from "../models/cases/GCase.model";
 import ACase from "../models/cases/ACase.model";
-import LOneCase from "../models/cases/LOneCase.model";
-import MOneCase from "../models/cases/MOneCase.model";
 import ICase from "../models/cases/ICase.model";
-import MTwoCase from "../models/cases/MTwo.model";
+import MTwoCase from "../models/cases/MTwoCase.model";
 import LTwoCase from "../models/cases/LTwoCase.model";
 import MThreeCase from "../models/cases/MThreeCase.model";
+import LFourCase from "../models/cases/L/LFourCase.model";
+import MFiveCase from "../models/cases/M/MFiveCase.model";
+import MFourCase from "../models/cases/M/MFour.Mode";
 
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
@@ -716,7 +717,6 @@ export const dynamicReportGenerateController: RequestHandler = async (
         }
       }
     }
-    res.send({ matchLTwoCaseData, matchMThreeCaseData });
 
     // <----------------------------  M5 INVOICE EMPTY AGGREGATE ---------------------------->
     const MCaseInvoiceEmpty = await vendorCollection.aggregate([
@@ -1000,7 +1000,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
     if (LCaseInvoiceEmpty) {
       let idx: number = 1;
       for (const item of LCaseInvoiceEmpty) {
-        const LCaseInstance = new LOneCase({
+        const LCaseInstance = new LFourCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
@@ -1021,7 +1021,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
     if (MCaseInvoiceEmpty) {
       let idx: number = 1;
       for (const item of MCaseInvoiceEmpty) {
-        const MCaseInstance = new MOneCase({
+        const MCaseInstance = new MFiveCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
@@ -1065,7 +1065,7 @@ export const dynamicReportGenerateController: RequestHandler = async (
     if (matchMCaseData1) {
       let idx: number = 1;
       for (const item of matchMCaseData1) {
-        const MTwoCaseInstance = new MTwoCase({
+        const MTwoCaseInstance = new MFourCase({
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
           SNO: idx++,
