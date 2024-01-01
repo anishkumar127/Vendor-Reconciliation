@@ -17,17 +17,17 @@ export const vendorFileUploadController: RequestHandler = async (req, res) => {
   if (!token)
     return res.status(401).json({ error: "you are not authenticated" });
 
-  const { _id, email }: any = await getUser(token);
+  const { _id, email, username }: any = await getUser(token);
 
-  if (!_id || !email)
+  if (!_id || !email || !username)
     return res.status(401).json({ error: "user not authenticated!" });
 
   let YourModel;
   try {
-    YourModel = mongoose.model(`${email}@vendorOpen`, yourSchemaVendor);
+    YourModel = mongoose.model(`${username}@vendorOpen`, yourSchemaVendor);
   } catch (error) {
     console.log(error);
-    YourModel = mongoose.model(`${email}@vendorOpen`);
+    YourModel = mongoose.model(`${username}@vendorOpen`);
   }
 
   const uniqueId = uuidv4();

@@ -3,6 +3,9 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 dotenv.config();
+
+const usernameRegex = /^[a-z0-9_]{5,60}$/;
+
 const userSchema = new Schema(
   {
     username: {
@@ -12,6 +15,13 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
       index: true,
+      validate: {
+        validator: function (value: any) {
+          return usernameRegex.test(value);
+        },
+        message:
+          "Invalid username format. It can only contain lowercase letters, numbers, and underscores, and must be between 5 and 60 characters long.",
+      },
     },
     email: {
       type: String,

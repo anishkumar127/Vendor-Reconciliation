@@ -64,15 +64,17 @@ export const dynamicReportGenerateController: RequestHandler = async (
   if (!token)
     return res.status(401).json({ error: "you are not authenticated" });
 
-  const { _id, email }: any = await getUser(token);
+  const { _id, email, username }: any = await getUser(token);
 
-  if (!_id || !email)
+  if (!_id || !email || !username)
     return res.status(401).json({ error: "user not authenticated!" });
 
-  const Collection: any = await getModelByString(`${email}@masterOpen`);
+  const Collection: any = await getModelByString(`${username}@masterOpen`);
 
-  const vendorCollection: any = await getModelByString(`${email}@vendorOpen`);
-  const lastCollection: any = await getModelByString(`${email}@complete`);
+  const vendorCollection: any = await getModelByString(
+    `${username}@vendorOpen`
+  );
+  const lastCollection: any = await getModelByString(`${username}@complete`);
 
   if (!Collection || !vendorCollection)
     return res.status(500).json({ error: "schema error!" });

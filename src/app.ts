@@ -25,15 +25,11 @@ import userSignUpRoutes from "./routes/user/userRoutes";
 import constantsRoute from "./routes/constants-route/constantsRoute";
 
 import mongoose from "mongoose";
-import bodyParser from "body-parser";
 
 const PORT = process.env.PORT || 3000;
 // <---------------------- MIDDLEWARES -------------------->
-// alternative of bodyParse.
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json({ limit: "10mb" }));
-app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(cookieParser());
 app.use(morgan("dev"));
@@ -45,11 +41,6 @@ app.use(morgan("dev"));
 app.use(cors({ origin: "*" }));
 
 // <------------------------- ROUTES MIDDLEWARE  -------------------->
-// Company Open
-
-// Vendor Open
-
-// All Details SOA.
 
 // Create User
 app.use("/api/user", userSignUpRoutes);
@@ -71,8 +62,8 @@ app.use("/api/generate-report", generateReportRoutes);
 app.use("/api/mapping", mappingFileRoute);
 // <------------------------- DATABASE CONNECT -------------------->
 
-const MONGO_URI: any = process.env.MONGO_URI;
-// const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
+// const MONGO_URI: any = process.env.MONGO_URI;
+const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
 console.log(process.env.NODE_ENV === "production", MONGO_URI);
 mongoose
   .connect(MONGO_URI)

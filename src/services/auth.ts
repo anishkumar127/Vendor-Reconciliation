@@ -7,6 +7,7 @@ export function setUser(user: any) {
     const payload = {
       _id: user._id,
       email: user.email,
+      username: user.username,
       role: user.role,
     };
     return jwt.sign(payload, secret);

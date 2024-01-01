@@ -16,17 +16,16 @@ export const completeDetailsFileUploadController: RequestHandler = async (
   if (!token)
     return res.status(401).json({ error: "you are not authenticated" });
 
-  const { _id, email }: any = await getUser(token);
+  const { _id, email, username }: any = await getUser(token);
 
-  if (!_id || !email)
+  if (!_id || !email || !username)
     return res.status(401).json({ error: "user not authenticated!" });
 
   let YourModel;
   try {
-    YourModel = mongoose.model(`${email}@complete`, yourSchemaComplete);
+    YourModel = mongoose.model(`${username}@complete`, yourSchemaComplete);
   } catch (error) {
-    console.log(error);
-    YourModel = mongoose.model(`${email}@complete`);
+    YourModel = mongoose.model(`${username}@complete`);
   }
 
   const uniqueId = uuidv4();
@@ -72,7 +71,6 @@ export const completeDetailsFileUploadController: RequestHandler = async (
       }
     }
   } catch (error: any) {
-    console.log(error);
     // return res.status(500).json(error);
     if (error.name === "ValidationError") {
       // Handle validation error
