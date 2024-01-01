@@ -255,9 +255,12 @@ export const dynamicReportGenerateController: RequestHandler = async (
 
     for (let i = 0; i < LeftSideAggregation?.length; i++) {
       if (LeftSideAggregation[i]?.finalresult?.data) {
+        console.log(LeftSideAggregation[i]?.finalresult?.data);
         const diffBAMatch = LeftSideAggregation[i]?.diffBAMatch;
-        const documentNumber =
-          LeftSideAggregation[i]?.finalresult?.data["Document Number"];
+        // const documentNumber =
+        //   LeftSideAggregation[i]?.finalresult?.data["Document Number"];
+        const DocumentTypeMapped =
+          LeftSideAggregation[i]?.finalresult?.data["DocumentTypeMapped"];
         const paymentDocument =
           LeftSideAggregation[i]?.finalresult?.data["Payment Document"];
 
@@ -268,10 +271,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
         let GClosingBalance1: string | number = 0;
 
         if (
-          documentNumber &&
-          (documentNumber.startsWith("AAD") ||
-            documentNumber.endsWith("AAD") ||
-            documentNumber.includes("AAD"))
+          DocumentTypeMapped &&
+          (DocumentTypeMapped.startsWith("Advance Payment") ||
+            DocumentTypeMapped.endsWith("Advance Payment") ||
+            DocumentTypeMapped.includes("Advance Payment"))
         ) {
           iCaseDataStore1.push(LeftSideAggregation[i]?.finalresult);
           // CLOSING BALANCE 3RD FILE
@@ -291,10 +294,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
         }
         // P CASE
         if (
-          documentNumber &&
-          (documentNumber.startsWith("PID") ||
-            documentNumber.endsWith("PID") ||
-            documentNumber.includes("PID"))
+          DocumentTypeMapped &&
+          (DocumentTypeMapped.startsWith("Debit note") ||
+            DocumentTypeMapped.endsWith("Debit note") ||
+            DocumentTypeMapped.includes("Debit note"))
         ) {
           matchPCaseData1.push(LeftSideAggregation[i]?.finalresult);
           // Debit Amount(INR) 3RD FILE
@@ -314,10 +317,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
         }
         // K CASE
         if (
-          documentNumber &&
-          (documentNumber.startsWith("TDS") ||
-            documentNumber.endsWith("TDS") ||
-            documentNumber.includes("TDS"))
+          DocumentTypeMapped &&
+          (DocumentTypeMapped.startsWith("TDS") ||
+            DocumentTypeMapped.endsWith("TDS") ||
+            DocumentTypeMapped.includes("TDS"))
         ) {
           matchKCaseData1.push(LeftSideAggregation[i]?.finalresult);
           // Debit Amount(INR) 3RD FILE
@@ -808,9 +811,13 @@ export const dynamicReportGenerateController: RequestHandler = async (
         } else if (documentDate <= currentDate) {
           // PASTE DATE.
           const balance = ACase_And_RightSideAggregation[i]?.balance;
-          const documentNumber =
+          // const documentNumber =
+          //   ACase_And_RightSideAggregation[i]?.resultcompletes?.data[
+          //     "Document Number"
+          //   ];
+          const DocumentTypeMapped =
             ACase_And_RightSideAggregation[i]?.resultcompletes?.data[
-              "Document Number"
+              "DocumentTypeMapped"
             ];
           const paymentDocument =
             ACase_And_RightSideAggregation[i]?.resultcompletes?.data[
@@ -823,10 +830,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
           let GClosingBalance1: string | number = 0;
 
           if (
-            documentNumber &&
-            (documentNumber.startsWith("AAD") ||
-              documentNumber.endsWith("AAD") ||
-              documentNumber.includes("AAD"))
+            DocumentTypeMapped &&
+            (DocumentTypeMapped.startsWith("Advance Payment") ||
+              DocumentTypeMapped.endsWith("Advance Payment") ||
+              DocumentTypeMapped.includes("Advance Payment"))
           ) {
             iCaseDataStoreTwo.push(
               ACase_And_RightSideAggregation[i]?.resultcompletes
@@ -850,10 +857,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
           }
           // P CASE
           if (
-            documentNumber &&
-            (documentNumber.startsWith("PID") ||
-              documentNumber.endsWith("PID") ||
-              documentNumber.includes("PID"))
+            DocumentTypeMapped &&
+            (DocumentTypeMapped.startsWith("Debit note") ||
+              DocumentTypeMapped.endsWith("Debit note") ||
+              DocumentTypeMapped.includes("Debit note"))
           ) {
             matchPCaseDataTwo.push(
               ACase_And_RightSideAggregation[i]?.resultcompletes
@@ -877,10 +884,10 @@ export const dynamicReportGenerateController: RequestHandler = async (
           }
           // K CASE
           if (
-            documentNumber &&
-            (documentNumber.startsWith("TDS") ||
-              documentNumber.endsWith("TDS") ||
-              documentNumber.includes("TDS"))
+            DocumentTypeMapped &&
+            (DocumentTypeMapped.startsWith("TDS") ||
+              DocumentTypeMapped.endsWith("TDS") ||
+              DocumentTypeMapped.includes("TDS"))
           ) {
             matchKCaseDataTwo.push(
               ACase_And_RightSideAggregation[i]?.resultcompletes
