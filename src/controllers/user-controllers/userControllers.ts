@@ -105,16 +105,14 @@ export const userSignInController = async (req: Request, res: Response) => {
     //   sameSite: 'none',
     //   secure:true
     // });
-    return res
-      .status(200)
-      .json({
-        role: "MASTER",
-        token: token,
-        fullName: user?.fullName,
-        email: user?.email,
-        username: user?.username,
-        ID: user?._id,
-      });
+    return res.status(200).json({
+      role: "MASTER",
+      token: token,
+      fullName: user?.fullName,
+      email: user?.email,
+      username: user?.username,
+      ID: user?._id,
+    });
   } else {
     const user = await User.findOne({ email });
     if (!user) {
