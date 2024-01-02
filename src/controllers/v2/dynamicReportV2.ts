@@ -1271,9 +1271,8 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       const insertDocuments = [];
       let idx: number = 1;
       for (const item of matchMCaseData1) {
-        const debitAmount = item?.data["Closing Balance"];
-        console.log({ debitAmount });
-        console.log(item.data);
+        const debitAmount = item?.data["Debit Amount(INR)"];
+
         const MCaseInstance = {
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
@@ -1282,7 +1281,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Vendor Code": item?.data["Vendor Code"],
           "Document Date": item?.data["Document Date"],
           "Invoice Number": item?.data["Invoice Number"],
-          Amount: item?.data["Closing Balance"],
+          Amount: item?.data["Debit Amount(INR)"],
           "Invoice Amount": item?.data["Invoice Amount"],
         };
         mOneBalanceSum += Number(debitAmount);
@@ -1472,7 +1471,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
 
       let idx: number = 1;
       for (const item of matchLCaseDataTwo) {
-        const debitAmount = item?.data["Closing Balance"];
+        const debitAmount = item?.data["Debit Amount(INR)"];
 
         const LCaseInstance = {
           user: new mongoose.Types.ObjectId(_id),
@@ -1483,7 +1482,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Document Number": item?.data["Document Number"],
           "Document Date": item?.data["Document Date"],
           "Invoice Number": item?.data["Invoice Number"],
-          Amount: item?.data["Closing Balance"],
+          Amount: item?.data["Debit Amount(INR)"],
         };
         LThreeBalanceSum += Number(debitAmount);
         insertDocuments.push(LCaseInstance);
@@ -1508,7 +1507,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
 
       let idx: number = 1;
       for (const item of matchMCaseDataTwo) {
-        const debitAmount = item?.data["Closing Balance"];
+        const debitAmount = item?.data["Debit Amount(INR)"];
 
         const MCaseInstance = {
           user: new mongoose.Types.ObjectId(_id),
@@ -1518,7 +1517,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Vendor Code": item?.data["Vendor Code"],
           "Document Date": item?.data["Document Date"],
           "Invoice Number": item?.data["Invoice Number"],
-          Amount: item?.data["Closing Balance"],
+          Amount: item?.data["Debit Amount(INR)"],
           "Invoice Amount": item?.data["Invoice Amount"],
         };
         mFourBalanceSum += Number(debitAmount);
@@ -1764,7 +1763,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       const insertDocuments = [];
 
       for (const item of CaseF) {
-        const debitAmount = item?.data["Debit Amount(INR)"];
+        const debitAmount = item?.data["Closing Balance"];
 
         const FCaseInstance = {
           user: new mongoose.Types.ObjectId(_id),
@@ -1775,7 +1774,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Document Number": item?.data["Document Number"],
           "Document Date": item?.data["Document Date"],
           "Invoice Number": item?.data["Invoice Number"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
+          "Debit Amount(INR)": item?.data["Closing Balance"],
           "Invoice Amount": item?.data["Invoice Amount"],
           "Invoice Date": item?.data["Invoice Date"],
           "Payment Date": item?.data["Payment Date"],
@@ -1797,27 +1796,27 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       }
     }
 
-    res.send({
-      pOneBalanceSum,
-      kOneBalanceSum,
-      gOneBalanceSum,
-      iOneBalanceSum,
-      LOneBalanceSum,
-      mOneBalanceSum,
-      pTwoBalanceSum,
-      kTwoBalanceSum,
-      gTwoBalanceSum,
-      iTwoBalanceSum,
-      LThreeBalanceSum,
-      mFiveBalanceSum,
-      mFourBalanceSum,
-      mThreeBalanceSum,
-      LFourBalanceSum,
-      mTwoBalanceSum,
-      LTwoBalanceSum,
-      aOneBalanceSum,
-      fOneBalanceSum,
-    });
+    // res.send({
+    //   pOneBalanceSum,
+    //   kOneBalanceSum,
+    //   gOneBalanceSum,
+    //   iOneBalanceSum,
+    //   LOneBalanceSum,
+    //   mOneBalanceSum,
+    //   pTwoBalanceSum,
+    //   kTwoBalanceSum,
+    //   gTwoBalanceSum,
+    //   iTwoBalanceSum,
+    //   LThreeBalanceSum,
+    //   mFiveBalanceSum,
+    //   mFourBalanceSum,
+    //   mThreeBalanceSum,
+    //   LFourBalanceSum,
+    //   mTwoBalanceSum,
+    //   LTwoBalanceSum,
+    //   aOneBalanceSum,
+    //   fOneBalanceSum,
+    // });
     return res.status(200).json({
       message: "ok",
       success: "ok",
