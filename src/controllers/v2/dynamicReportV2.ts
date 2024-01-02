@@ -1796,27 +1796,27 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       }
     }
 
-    // res.send({
-    //   pOneBalanceSum,
-    //   kOneBalanceSum,
-    //   gOneBalanceSum,
-    //   iOneBalanceSum,
-    //   LOneBalanceSum,
-    //   mOneBalanceSum,
-    //   pTwoBalanceSum,
-    //   kTwoBalanceSum,
-    //   gTwoBalanceSum,
-    //   iTwoBalanceSum,
-    //   LThreeBalanceSum,
-    //   mFiveBalanceSum,
-    //   mFourBalanceSum,
-    //   mThreeBalanceSum,
-    //   LFourBalanceSum,
-    //   mTwoBalanceSum,
-    //   LTwoBalanceSum,
-    //   aOneBalanceSum,
-    //   fOneBalanceSum,
-    // });
+    console.log({
+      pOneBalanceSum,
+      kOneBalanceSum,
+      gOneBalanceSum,
+      iOneBalanceSum,
+      LOneBalanceSum,
+      mOneBalanceSum,
+      pTwoBalanceSum,
+      kTwoBalanceSum,
+      gTwoBalanceSum,
+      iTwoBalanceSum,
+      LThreeBalanceSum,
+      mFiveBalanceSum,
+      mFourBalanceSum,
+      mThreeBalanceSum,
+      LFourBalanceSum,
+      mTwoBalanceSum,
+      LTwoBalanceSum,
+      aOneBalanceSum,
+      fOneBalanceSum,
+    });
     return res.status(200).json({
       message: "ok",
       success: "ok",
