@@ -1411,7 +1411,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         };
         try {
           gTwoBalanceSum += Number(debitAmount);
-        } catch (error) {}
+        } catch (error) {
+          console.log(error);
+        }
         insertDocuments.push(GCaseInstance);
       }
 
