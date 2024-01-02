@@ -105,6 +105,8 @@ export const userSignInController = async (req: Request, res: Response) => {
     //   sameSite: 'none',
     //   secure:true
     // });
+    console.log(token);
+
     return res.status(200).json({
       role: "MASTER",
       token: token,

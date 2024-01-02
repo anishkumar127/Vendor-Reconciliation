@@ -4,6 +4,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+import helmet from "helmet";
 dotenv.config();
 
 // <------------------------- MODELS IMPORT  -------------------->
@@ -18,6 +19,8 @@ import generateReportRoutes from "./routes/unmatched/generateReportRoutes";
 import mappingFileRoute from "./routes/mapping-route/mappingFileRoutes";
 // <------------------------- USER ROUTES IMPORT  -------------------->
 import userSignUpRoutes from "./routes/user/userRoutes";
+
+import dynamicReportV2Route from "./routes/v2-route/v2RouteReport";
 
 // <------------------------- UNMATCHED ROUTES IMPORT  -------------------->
 
@@ -39,6 +42,7 @@ app.use(morgan("dev"));
 // }));
 // app.use(cors());
 app.use(cors({ origin: "*" }));
+app.use(helmet());
 
 // <------------------------- ROUTES MIDDLEWARE  -------------------->
 
@@ -56,14 +60,15 @@ app.use("/api/vendor", vendorOpenRoute);
 app.use("/api/complete", completeDetailsRoute);
 
 app.use("/api/report", dynamicReportGenerateRoute);
+app.use("/api/v2/report", dynamicReportV2Route);
 
 app.use("/api/generate-report", generateReportRoutes);
 
 app.use("/api/mapping", mappingFileRoute);
 // <------------------------- DATABASE CONNECT -------------------->
 
-const MONGO_URI: any = process.env.MONGO_URI;
-// const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
+// const MONGO_URI: any = process.env.MONGO_URI;
+const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
 console.log(process.env.NODE_ENV === "production", MONGO_URI);
 mongoose
   .connect(MONGO_URI)
