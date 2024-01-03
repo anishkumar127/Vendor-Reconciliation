@@ -15,7 +15,7 @@ export const yourSchemaMaster = new mongoose.Schema(
 yourSchemaMaster.pre("validate", function (next) {
   const data = this.data;
 
-  if (data && data["Closing Balance"]) {
+  if (data?.["Closing Balance"]) {
     // Clean up Closing Balance field
     data["Closing Balance"] = cleanUpClosingBalance(data["Closing Balance"]);
   }
@@ -26,5 +26,13 @@ yourSchemaMaster.pre("validate", function (next) {
 // Define the cleanUpClosingBalance function to remove special characters
 function cleanUpClosingBalance(closingBalance: any) {
   // Replace all special characters except digits, dots (.) and hyphens (-)
-  return closingBalance.replace(/[^\d.-]/g, "");
+
+  const cleanedValue = closingBalance?.toString()?.replace(/[^\d.-]/g, "");
+  // Convert to floating-point number
+  const floatValue: any = parseFloat(cleanedValue);
+
+  // Convert to integer
+  const integerValue = parseInt(floatValue, 10) ?? 0;
+
+  return integerValue;
 }

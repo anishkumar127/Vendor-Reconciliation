@@ -1013,11 +1013,11 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         const closingBalanceNumeric = parseFloat(closingBalanceWithoutCommas);
         if (closingBalanceNumeric) {
           if (closingBalanceNumeric > 0) {
-            // M3
-            matchMThreeCaseData.push(LTwoAndMThreeAggregate[i]);
-          } else {
-            // L2
+            // L2 - DEBIT POSITIVE
             matchLTwoCaseData.push(LTwoAndMThreeAggregate[i]);
+          } else {
+            // M3 - CREDIT NEGATIVE
+            matchMThreeCaseData.push(LTwoAndMThreeAggregate[i]);
           }
         }
       }
@@ -1030,7 +1030,8 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           $match: {
             "data.Invoice Number": { $exists: false },
             $expr: {
-              $gt: [
+              $lt: [
+                // CREDIT NEGATIVE
                 {
                   $toDouble: {
                     $replaceAll: {
@@ -1068,7 +1069,8 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           $match: {
             "data.Invoice Number": { $exists: false },
             $expr: {
-              $lt: [
+              $gt: [
+                // DEBIT POSITIVE AMOUNT
                 {
                   $toDouble: {
                     $replaceAll: {
