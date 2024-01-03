@@ -10,37 +10,10 @@ export const yourSchemaVendor = new mongoose.Schema(
   { timestamps: true }
 );
 
-// const requiredFields = [
-// "Business Partner",
-// "Business Partner Name",
-// "Closing Balance",
-// "Invoice Amount",
-// "Currency",
-// "Due Date",
-// "Document Date",
-// "Document Number",
-//   "Invoice Number",
-// ];
-
-// yourSchemaVendor.pre("validate", function (next) {
-//   const data = this.data as Record<string, any>;
-
-//   const missingFields = requiredFields.filter((field) => !data || !data[field]);
-
-//   if (missingFields.length > 0) {
-//     const errorMessage = `Data is missing required fields: ${missingFields.join(
-//       ", "
-//     )}`;
-//     this.invalidate("data", errorMessage);
-//   }
-
-//   next();
-// });
-
 yourSchemaVendor.pre("validate", function (next) {
   const data = this.data;
 
-  if (data && data["Closing Balance"]) {
+  if (data?.["Closing Balance"]) {
     // Clean up Closing Balance field
     data["Closing Balance"] = cleanUpClosingBalance(data["Closing Balance"]);
   }
@@ -50,5 +23,12 @@ yourSchemaVendor.pre("validate", function (next) {
 // Define the cleanUpClosingBalance function to remove special characters
 function cleanUpClosingBalance(closingBalance: any) {
   // Replace all special characters except digits, dots (.) and hyphens (-)
-  return closingBalance.replace(/[^\d.-]/g, "");
+  const cleanedValue = closingBalance?.toString()?.replace(/[^\d.-]/g, "");
+  // Convert to floating-point number
+  const floatValue: any = parseFloat(cleanedValue);
+
+  // Convert to integer
+  const integerValue = parseInt(floatValue, 10) ?? 0;
+
+  return integerValue;
 }
