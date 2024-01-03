@@ -490,11 +490,58 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         },
       },
       {
+        $match: {
+          "data.Invoice Number": {
+            $exists: true,
+          },
+        },
+      },
+      {
         $lookup: {
           from: vendorCollection.collection.name,
-          localField: "data.Invoice Number",
-          foreignField: "data.Invoice Number",
+          let: {
+            localField: "$data.Invoice Number",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $regexMatch: {
+                        input: "$data.Invoice Number",
+                        regex: "$$localField",
+                      },
+                    },
+                    {
+                      $regexMatch: {
+                        input: "$$localField",
+                        regex: "$data.Invoice Number",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ],
           as: "result",
+        },
+      },
+      {
+        $unwind: {
+          path: "$result",
+        },
+      },
+      {
+        $match: {
+          "result.uniqueId": recentIds?.vendorId,
+        },
+      },
+      {
+        $match: {
+          "result.data.Invoice Number": {
+            $exists: true,
+          },
         },
       },
       {
@@ -511,7 +558,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         },
       },
     ]);
-
     // <---------------------------- CASE L2 - M3 AGGREGATION ---------------------------->
 
     const LTwoAndMThreeAggregate = await vendorCollection.aggregate([
@@ -1041,21 +1087,8 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       ],
     ]);
 
-    // <---------------------------- CASE A ---------------------------->
-    // const ACaseFutureData: any[] = [];
-
-    // for (const caseData of ACaseData) {
-    //   const documentDate = new Date(
-    //     caseData?.resultFromCompletes?.data?.["Document Date"]
-    //   );
-    //   const currentDate = new Date();
-
-    //   if (documentDate > currentDate) {
-    //     ACaseFutureData.push(caseData?.resultFromCompletes);
-    //   }
-    // }
-
     // <-------------------------- ONE LEFT ------------------------------>
+
     // <------------------- P ONE DATABASE ------------------------->
 
     let pOneBalanceSum: number = 0;

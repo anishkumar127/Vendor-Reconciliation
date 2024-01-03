@@ -29,7 +29,7 @@ import constantsRoute from "./routes/constants-route/constantsRoute";
 
 import mongoose from "mongoose";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ?? 3000;
 // <---------------------- MIDDLEWARES -------------------->
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -67,8 +67,8 @@ app.use("/api/generate-report", generateReportRoutes);
 app.use("/api/mapping", mappingFileRoute);
 // <------------------------- DATABASE CONNECT -------------------->
 
-// const MONGO_URI: any = process.env.MONGO_URI;
-const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
+const MONGO_URI: any = process.env.MONGO_URI;
+// const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
 console.log(process.env.NODE_ENV === "production", MONGO_URI);
 mongoose
   .connect(MONGO_URI)
