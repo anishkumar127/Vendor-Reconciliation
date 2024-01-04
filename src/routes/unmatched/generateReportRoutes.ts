@@ -15,6 +15,7 @@ import {
   getMTwoCaseGeneratedReport,
   getPCaseGeneratedReport,
   getPTwoCaseGeneratedReport,
+  getRecoGeneratedReport,
 } from "../../controllers/unmatched-controllers/generateCaseController";
 import { authenticateToken } from "../../middlewares/authenticateToken";
 const router = express.Router();
@@ -80,5 +81,6 @@ router.get("/i-two-case", authenticateToken, getITwoCaseGeneratedReport);
 
 // M CASE REPORT ROUTE
 // router.get("/m-four-case", authenticateToken, getMFourCaseGeneratedReport);
+router.get("/reco", authenticateToken, getRecoGeneratedReport);
 
 export default router;
