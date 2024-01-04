@@ -67,8 +67,8 @@ app.use("/api/generate-report", generateReportRoutes);
 app.use("/api/mapping", mappingFileRoute);
 // <------------------------- DATABASE CONNECT -------------------->
 
-// const MONGO_URI: any = process.env.MONGO_URI;
-const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
+ const MONGO_URI: any = process.env.MONGO_URI;
+//const MONGO_URI: any = process.env.MONGO_LOCAL_URI;
 console.log(process.env.NODE_ENV === "production", MONGO_URI);
 mongoose
   .connect(MONGO_URI)
