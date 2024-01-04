@@ -32,5 +32,5 @@ function cleanUpClosingBalance(closingBalance: any) {
   // Convert to integer
   const integerValue = parseInt(floatValue, 10) ?? 0;
 
-  return integerValue;
+  return String(integerValue);
 }
