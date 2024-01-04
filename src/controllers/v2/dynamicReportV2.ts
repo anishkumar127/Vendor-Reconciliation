@@ -17,6 +17,7 @@ import KTwoCase from "../../models/cases/right/KTwoCase.model";
 import PTwoCase from "../../models/cases/right/PTwoCase.model";
 import { RecentIds } from "../../models/mixed/RecentIds.model";
 import { getUser } from "../../services/auth";
+import Reco from "../../models/cases/Reco/Reco.model";
 
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
@@ -1857,7 +1858,96 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     });
 
     //
-    // const totalBalance = 0;
+    const totalBalance =
+      pOneBalanceSum +
+      kOneBalanceSum +
+      gOneBalanceSum +
+      iOneBalanceSum +
+      pTwoBalanceSum +
+      kTwoBalanceSum +
+      gTwoBalanceSum +
+      iTwoBalanceSum +
+      mFiveBalanceSum +
+      mThreeBalanceSum +
+      LFourBalanceSum +
+      mTwoBalanceSum +
+      LTwoBalanceSum +
+      aOneBalanceSum +
+      fOneBalanceSum;
+
+    // if (totalBalance) {
+    //   const newReco = new Reco({
+    //     user: new mongoose.Types.ObjectId(_id),
+    //     uniqueId: recentIds?.masterId,
+    //     data: {
+    //       Particular: 'Some Particular Data',
+    //       Annexure: 'P ONE',
+    //       Company: pOneBalanceSum,
+    //       Vendor: 'Vendor Open',
+    //       'Vendor Name': vendorName,
+    //       'Vendor Code': 'Some Vendor Code Data',
+    //     },
+    //     total:totalBalance
+    //   });
+    //   // Save To Database
+    //   try {
+    //     if (newReco) {
+    //       await Reco.insertMany(newReco);
+    //     }
+    //   } catch (error: any) {
+    //     return res
+    //       .status(500)
+    //       .json({ error: "Internal Server Error", details: error.message });
+    //   }
+    // }
+
+    const balances = [
+      { key: "POne", balance: pOneBalanceSum },
+      { key: "KOne", balance: kOneBalanceSum },
+      { key: "GOne", balance: gOneBalanceSum },
+      { key: "IOne", balance: iOneBalanceSum },
+      { key: "PTwo", balance: pTwoBalanceSum },
+      { key: "KTwo", balance: kTwoBalanceSum },
+      { key: "GTwo", balance: gTwoBalanceSum },
+      { key: "ITwo", balance: iTwoBalanceSum },
+      { key: "MFive", balance: mFiveBalanceSum },
+      { key: "MThree", balance: mThreeBalanceSum },
+      { key: "LFour", balance: LFourBalanceSum },
+      { key: "MTwo", balance: mTwoBalanceSum },
+      { key: "LTwo", balance: LTwoBalanceSum },
+      { key: "AOne", balance: aOneBalanceSum },
+      { key: "FOne", balance: fOneBalanceSum },
+    ];
+
+    if (balances) {
+      const insertDocument = [];
+      for (const balance of balances) {
+        const newReco = new Reco({
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          data: {
+            Particular: "Some Particular Data",
+            Annexure: balance.key,
+            Company: balance.balance,
+            Vendor: "Vendor Open",
+            "Vendor Name": vendorName,
+            "Vendor Code": "Some Vendor Code Data",
+          },
+          total: totalBalance,
+        });
+        insertDocument.push(newReco);
+      }
+
+      console.log({ insertDocument });
+      // Save To Database
+      try {
+        await Reco.insertMany(insertDocument);
+      } catch (error: any) {
+        return res
+          .status(500)
+          .json({ error: "Internal Server Error", details: error.message });
+      }
+    }
 
     return res.status(200).json({
       message: "ok",

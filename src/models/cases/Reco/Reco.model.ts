@@ -12,6 +12,9 @@ const yourSchema = new mongoose.Schema(
       "Vendor Name": { type: String, required: false },
       "Vendor Code": { type: String, required: false },
     },
+    total: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
