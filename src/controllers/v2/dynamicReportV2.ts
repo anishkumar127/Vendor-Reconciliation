@@ -2007,6 +2007,8 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Vendor Name": vendorName,
             "Vendor Code": "Some Vendor Code Data",
           },
+          "Vendor Name": vendorName,
+          "Vendor Code": "Some Vendor Code Data",
           total: totalSum,
         });
         insertDocument.push(newReco);
