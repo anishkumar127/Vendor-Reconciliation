@@ -1,5 +1,4 @@
 import express from "express";
-import { authenticateToken } from "../../middlewares/authenticateToken";
 import {
   getACaseGeneratedReport,
   getFCaseGeneratedReport,
@@ -9,18 +8,15 @@ import {
   getITwoCaseGeneratedReport,
   getKCaseGeneratedReport,
   getKTwoCaseGeneratedReport,
-  getLCaseGeneratedReport,
   getLFourCaseGeneratedReport,
-  getLThreeCaseGeneratedReport,
   getLTwoCaseGeneratedReport,
-  getMCaseGeneratedReport,
   getMFiveCaseGeneratedReport,
-  getMFourCaseGeneratedReport,
   getMThreeCaseGeneratedReport,
   getMTwoCaseGeneratedReport,
   getPCaseGeneratedReport,
   getPTwoCaseGeneratedReport,
 } from "../../controllers/unmatched-controllers/generateCaseController";
+import { authenticateToken } from "../../middlewares/authenticateToken";
 const router = express.Router();
 
 // P CASE REPORT ROUTE
@@ -36,10 +32,10 @@ router.get("/g-one-case", authenticateToken, getGCaseGeneratedReport);
 router.get("/i-one-case", authenticateToken, getICaseGeneratedReport);
 
 // L CASE REPORT ROUTE
-router.get("/l-one-case", authenticateToken, getLCaseGeneratedReport);
+// router.get("/l-one-case", authenticateToken, getLCaseGeneratedReport);
 
 // M CASE REPORT ROUTE
-router.get("/m-one-case", authenticateToken, getMCaseGeneratedReport);
+// router.get("/m-one-case", authenticateToken, getMCaseGeneratedReport);
 
 // F CASE REPORT ROUTE
 router.get("/f-case", authenticateToken, getFCaseGeneratedReport);
@@ -80,9 +76,9 @@ router.get("/g-two-case", authenticateToken, getGTwoCaseGeneratedReport);
 router.get("/i-two-case", authenticateToken, getITwoCaseGeneratedReport);
 
 // L CASE REPORT ROUTE
-router.get("/l-three-case", authenticateToken, getLThreeCaseGeneratedReport);
+// router.get("/l-three-case", authenticateToken, getLThreeCaseGeneratedReport);
 
 // M CASE REPORT ROUTE
-router.get("/m-four-case", authenticateToken, getMFourCaseGeneratedReport);
+// router.get("/m-four-case", authenticateToken, getMFourCaseGeneratedReport);
 
 export default router;
