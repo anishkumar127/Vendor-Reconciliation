@@ -23,16 +23,11 @@ yourSchemaMaster.pre("validate", function (next) {
   next();
 });
 
-// Define the cleanUpClosingBalance function to remove special characters
 function cleanUpClosingBalance(closingBalance: any) {
   // Replace all special characters except digits, dots (.) and hyphens (-)
-
   const cleanedValue = closingBalance?.toString()?.replace(/[^\d.-]/g, "");
-  // Convert to floating-point number
-  const floatValue: any = parseFloat(cleanedValue);
-
   // Convert to integer
-  const integerValue = parseInt(floatValue, 10) ?? 0;
+  const integerValue = parseInt(cleanedValue, 10) || 0;
 
   return String(integerValue);
 }
