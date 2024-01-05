@@ -336,8 +336,15 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           paymentDocument &&
           (paymentDocument.startsWith("Payment") ||
             paymentDocument.endsWith("Payment") ||
-            paymentDocument.includes("Payment"))
+            paymentDocument.includes("Payment")) &&
+          (!DocumentTypeMapped.startsWith("TDS") ||
+            !DocumentTypeMapped.endsWith("TDS") ||
+            !DocumentTypeMapped.includes("TDS")) &&
+          (!DocumentTypeMapped.startsWith("Debit note") ||
+            !DocumentTypeMapped.endsWith("Debit note") ||
+            !DocumentTypeMapped.includes("Debit note"))
         ) {
+          // P K NOT CONTAINS IN THIS G CASE.
           const closingBalanceString =
             LeftSideAggregation[i]?.finalresult?.data?.["Debit Amount(INR)"];
 
@@ -1744,7 +1751,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
 
       for (const item of MCaseInvoiceEmpty) {
         const debitAmount = item?.data["Closing Balance"];
-        console.log(item.data);
         const MCaseInstance = {
           user: new mongoose.Types.ObjectId(_id),
           uniqueId: recentIds?.masterId,
