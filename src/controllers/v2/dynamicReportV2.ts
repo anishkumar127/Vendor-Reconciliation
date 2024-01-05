@@ -150,7 +150,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           data: 1,
           result: 1,
           first: {
-            $toDouble: {
+            $toInt: {
               $replaceAll: {
                 input: "$data.Closing Balance",
                 find: ",",
@@ -159,7 +159,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             },
           },
           second: {
-            $toDouble: {
+            $toInt: {
               $replaceAll: {
                 input: "$result.data.Closing Balance",
                 find: ",",
@@ -438,7 +438,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           data: 1,
           result: 1,
           first: {
-            $toDouble: {
+            $toInt: {
               $replaceAll: {
                 input: "$data.Closing Balance",
                 find: ",",
@@ -447,7 +447,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             },
           },
           second: {
-            $toDouble: {
+            $toInt: {
               $replaceAll: {
                 input: "$result.data.Closing Balance",
                 find: ",",
@@ -799,7 +799,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           _id: 0,
           resultcompletes: 1,
           balance: {
-            $toDouble: {
+            $toInt: {
               $replaceAll: {
                 input: "$data.Closing Balance",
                 find: ",",
@@ -1035,69 +1035,65 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     }
 
     // <----------------------------  M5 INVOICE EMPTY AGGREGATE ---------------------------->
+
     const MCaseInvoiceEmpty = await vendorCollection.aggregate([
-      [
-        {
-          $match: {
-            "data.Invoice Number": { $exists: false },
-            $expr: {
-              $lt: [
-                // CREDIT NEGATIVE
-                {
-                  $toDouble: {
-                    $replaceAll: {
-                      input: "$data.Closing Balance",
-                      find: ",",
-                      replacement: "",
-                    },
+      {
+        $match: {
+          "data.Invoice Number": { $exists: false },
+          $expr: {
+            $lt: [
+              // CREDIT NEGATIVE
+              {
+                $toInt: {
+                  $replaceAll: {
+                    input: "$data.Closing Balance",
+                    find: ",",
+                    replacement: "",
                   },
                 },
-                0,
-              ],
-            },
-            uniqueId: recentIds?.vendorId,
+              },
+              0,
+            ],
           },
+          // uniqueId: recentIds?.vendorId,
         },
-        // {
-        //   $project: {
-        //     first: {
-        //       $toDouble: {
-        //         $replaceAll: {
-        //           input: "$data.Closing Balance",
-        //           find: ",",
-        //           replacement: "",
-        //         },
-        //       },
-        //     },
-        //   },
-        // },
-      ],
+      },
+      {
+        $match: {
+          uniqueId: recentIds?.vendorId,
+        },
+      },
     ]);
+
     // <----------------------------  L4 INVOICE EMPTY AGGREGATE ---------------------------->
+
     const LCaseInvoiceEmpty = await vendorCollection.aggregate([
-      [
-        {
-          $match: {
-            "data.Invoice Number": { $exists: false },
-            $expr: {
-              $gt: [
-                // DEBIT POSITIVE AMOUNT
-                {
-                  $toDouble: {
-                    $replaceAll: {
-                      input: "$data.Closing Balance",
-                      find: ",",
-                      replacement: "",
-                    },
+      {
+        $match: {
+          uniqueId: recentIds?.vendorId,
+        },
+      },
+      {
+        $match: {
+          "data.Invoice Number": { $exists: false },
+          $expr: {
+            $gt: [
+              // DEBIT POSITIVE AMOUNT
+              {
+                $toInt: {
+                  $replaceAll: {
+                    input: "$data.Closing Balance",
+                    find: ",",
+                    replacement: "",
                   },
                 },
-                0,
-              ],
-            },
-            uniqueId: recentIds?.vendorId,
+              },
+              0,
+            ],
           },
+          // uniqueId: recentIds?.vendorId,
         },
-      ],
+      },
     ]);
 
     // <-------------------------- ONE LEFT ------------------------------>

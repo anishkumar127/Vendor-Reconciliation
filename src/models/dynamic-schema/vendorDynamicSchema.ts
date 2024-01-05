@@ -23,6 +23,8 @@ yourSchemaVendor.pre("validate", function (next) {
 function cleanUpClosingBalance(closingBalance: any) {
   // Replace all special characters except digits, dots (.) and hyphens (-)
   const cleanedValue = closingBalance?.toString()?.replace(/[^\d.-]/g, "");
+
+  // console.log(cleanedValue);
   // Convert to integer
   const integerValue = parseInt(cleanedValue, 10) || 0;
 
