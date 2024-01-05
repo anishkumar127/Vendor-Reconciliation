@@ -9,8 +9,8 @@ const yourSchema = new mongoose.Schema(
       Annexure: { type: String, required: false },
       Company: { type: String, required: false },
       Vendor: { type: String, required: false },
-      "Vendor Name": { type: String, required: false },
-      "Vendor Code": { type: String, required: false },
+      // "Vendor Name": { type: String, required: false },
+      // "Vendor Code": { type: String, required: false },
     },
     total: {
       type: String,

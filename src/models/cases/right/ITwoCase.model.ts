@@ -12,7 +12,8 @@ const yourSchema = new mongoose.Schema(
     "Document Date": { type: String, required: false },
     "Due Date": { type: String, required: false },
     "Invoice Amount": { type: String, required: false },
-    Amount: { type: String },
+    "Debit Amount(INR)": { type: String },
+    "Credit Amount(INR)": { type: String },
   },
   { timestamps: true }
 );

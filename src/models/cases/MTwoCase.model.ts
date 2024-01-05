@@ -10,7 +10,7 @@ const yourSchema = new mongoose.Schema(
     "Document Date": { type: String, required: false },
     "Invoice Number": { type: String, required: false },
     Difference: { type: String, required: false },
-    Amount: { type: String },
+    "Closing Balance": { type: String },
   },
   { timestamps: true }
 );

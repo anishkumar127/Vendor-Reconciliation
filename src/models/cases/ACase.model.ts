@@ -17,6 +17,7 @@ const yourSchema = new mongoose.Schema(
     "Payment Document": { type: String, required: false },
     "Payment Date": { type: String, required: false },
     "Debit Amount(INR)": { type: String },
+    "Credit Amount(INR)": { type: String },
     "TDS Amount": { type: String },
     "O/s as per": { type: String },
   },
