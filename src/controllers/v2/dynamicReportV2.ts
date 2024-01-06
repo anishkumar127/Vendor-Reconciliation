@@ -1138,9 +1138,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Document Date": item?.data["Document Date"],
             "Invoice Number": item?.data["Invoice Number"],
             "Grn Number": item?.data["Grn Number"],
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
+            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
             "Debit Amount(INR)": debitAmount,
-            "Closing Balance": item?.data["Closing Balance"],
+            "Closing Balance": item?.data["Closing Balance"] ?? "",
           };
 
           pOneBalanceSum += Number(debitAmount);
@@ -1186,9 +1186,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Document Date": item?.data["Document Date"],
             "Invoice Number": item?.data["Invoice Number"],
             "Grn Number": item?.data["Grn Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
-            "Closing Balance": item?.data["Closing Balance"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+            "Closing Balance": item?.data["Closing Balance"] ?? "",
           };
 
           kOneBalanceSum += Number(debitAmount);
@@ -1239,7 +1239,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Grn Number": item?.data?.["Grn Number"],
             "Debit Amount(INR)": item?.data?.["Debit Amount(INR)"],
             "Credit Amount(INR)": item?.data?.["Credit Amount(INR)"],
-            "Closing Balance": item?.data["Closing Balance"],
+            "Closing Balance": item?.data["Closing Balance"] ?? "",
           };
           gOneBalanceSum += Number(debitAmount);
           const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -1282,9 +1282,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Due Date": item?.data["Due Date"],
             "Invoice Amount": item?.data["Invoice Amount"],
             "Invoice Number": item?.data["Invoice Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
-            "Closing Balance": item?.data["Closing Balance"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+            "Closing Balance": item?.data["Closing Balance"] ?? "",
           };
           iOneBalanceSum += Number(debitAmount);
           const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -1401,9 +1401,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Document Date": item?.data["Document Date"],
             "Invoice Number": item?.data["Invoice Number"],
             "Grn Number": item?.data["Grn Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
-            "Closing Balance": item?.data["Closing Balance"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+            "Closing Balance": item?.data["Closing Balance"] ?? "",
           };
 
           pTwoBalanceSum += Number(debitAmount);
@@ -1449,9 +1449,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Document Date": item?.data["Document Date"],
             "Invoice Number": item?.data["Invoice Number"],
             "Grn Number": item?.data["Grn Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
-            "Closing Balance": item?.data["Closing Balance"],
+            "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+            "Closing Balance": item?.data["Closing Balance"] ?? "",
           };
 
           kTwoBalanceSum += Number(debitAmount);
@@ -1497,7 +1497,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Grn Number": item?.data?.["Grn Number"],
           "Debit Amount(INR)": item?.data?.["Debit Amount(INR)"],
           "Credit Amount(INR)": item?.data?.["Credit Amount(INR)"],
-          "Closing Balance": item?.data["Closing Balance"],
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
         };
         try {
           gTwoBalanceSum += Number(debitAmount);
@@ -1540,9 +1540,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Due Date": item?.data["Due Date"],
           "Invoice Number": item?.data["Invoice Number"],
           "Invoice Amount": item?.data["Invoice Amount"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
-          "Closing Balance": item?.data["Closing Balance"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
         };
         iTwoBalanceSum += Number(debitAmount);
         const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -1658,9 +1658,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Document Date": item?.data["Document Date"],
           "Invoice Number": item?.data["Invoice Number"],
           "Invoice Amount": item?.data["Invoice Amount"],
-          "Closing Balance": item?.data["Closing Balance"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
         };
         LTwoBalanceSum += Number(debitAmount);
         const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -1701,9 +1701,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Document Date": item?.data["Document Date"],
           "Invoice Number": item?.data["Invoice Number"],
           "Invoice Amount": item?.data["Invoice Amount"],
-          "Closing Balance": item?.data["Closing Balance"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
         };
         mThreeBalanceSum += Number(debitAmount);
         const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -1741,9 +1741,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Document Number": item?.data["Document Number"],
           "Document Date": item?.data["Document Date"],
           "Invoice Amount": item?.data["Invoice Amount"],
-          "Closing Balance": item?.data["Closing Balance"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
         };
         LFourBalanceSum += Number(debitAmount);
         const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -1777,9 +1777,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           SNO: idx++,
           "Document Date": item?.data["Document Date"],
           "Invoice Amount": item?.data["Invoice Amount"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
-          "Closing Balance": item?.data["Closing Balance"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
         };
         mFiveBalanceSum += Number(debitAmount);
         const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -1817,9 +1817,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Invoice Number": item?.data["Invoice Number"],
           "Vendor Name": item?.data["Vendor Name"],
           "Company Code": item?.data["Company Code"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
-          "Closing Balance": item?.data["Closing Balance"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
           Difference: item?.diffABMatch,
         };
         mTwoBalanceSum += Number(debitAmount);
@@ -1864,9 +1864,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Payment Date": item?.data["Payment Date"],
           "Payment Document": item?.data["Payment Document"],
           "Grn Number": item?.data["Grn Number"],
-          "Closing Balance": item?.data["Closing Balance"],
-          "Debit Amount(INR)": item?.data["Debit Amount(INR)"],
-          "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
         };
         aOneBalanceSum += Number(debitAmount);
         const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -1911,8 +1911,8 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           "Payment Document": item?.data["Payment Document"],
           "Grn Number": item?.data["Grn Number"],
           "Debit Amount(INR)": item?.data["Closing Balance"],
-          "Credit Amount(INR)": item?.data["Credit Amount(INR)"],
-          "Closing Balance": item?.data["Closing Balance"],
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
         };
         fOneBalanceSum += Number(debitAmount);
         const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
@@ -2016,46 +2016,163 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       aOne +
       fOne;
 
+    // const balances = [
+    //   { key: "POne", balance: pOne },
+    //   { key: "KOne", balance: kOne },
+    //   { key: "GOne", balance: gOne },
+    //   { key: "IOne", balance: iOne },
+    //   { key: "PTwo", balance: pTwo },
+    //   { key: "KTwo", balance: kTwo },
+    //   { key: "GTwo", balance: gTwo },
+    //   { key: "ITwo", balance: iTwo },
+    //   { key: "MFive", balance: mFive },
+    //   { key: "MThree", balance: mThree },
+    //   { key: "LFour", balance: LFour },
+    //   { key: "MTwo", balance: mTwo },
+    //   { key: "LTwo", balance: LTwo },
+    //   { key: "AOne", balance: aOne },
+    //   { key: "FOne", balance: fOne },
+    // ];
+
     const balances = [
-      { key: "POne", balance: pOne },
-      { key: "KOne", balance: kOne },
-      { key: "GOne", balance: gOne },
-      { key: "IOne", balance: iOne },
-      { key: "PTwo", balance: pTwo },
-      { key: "KTwo", balance: kTwo },
-      { key: "GTwo", balance: gTwo },
-      { key: "ITwo", balance: iTwo },
-      { key: "MFive", balance: mFive },
-      { key: "MThree", balance: mThree },
-      { key: "LFour", balance: LFour },
-      { key: "MTwo", balance: mTwo },
-      { key: "LTwo", balance: LTwo },
-      { key: "AOne", balance: aOne },
-      { key: "FOne", balance: fOne },
+      { key: "P1", balance: pOne },
+      { key: "K1", balance: kOne },
+      { key: "G1", balance: gOne },
+      { key: "I1", balance: iOne },
+      { key: "P2", balance: pTwo },
+      { key: "K2", balance: kTwo },
+      { key: "G2", balance: gTwo },
+      { key: "I2", balance: iTwo },
+      { key: "M5", balance: mFive },
+      { key: "M3", balance: mThree },
+      { key: "L4", balance: LFour },
+      { key: "M2", balance: mTwo },
+      { key: "L2", balance: LTwo },
+      { key: "A", balance: aOne },
+      { key: "F", balance: fOne },
     ];
 
+    const vendorCode = await Collection.findOne({
+      uniqueId: recentIds?.masterId,
+      "data.Vendor Name": vendorName,
+    });
+
+    // console.log({ vendorCode });
+
+    // if (balances) {
+    //   const insertDocument = [];
+    //   for (const balance of balances) {
+    //     if (balance.balance !== 0) {
+    //       const newReco = new Reco({
+    //         user: new mongoose.Types.ObjectId(_id),
+    //         uniqueId: recentIds?.masterId,
+    //         data: {
+    //           Particular: "Some Particular Data",
+    //           Annexure: balance.key,
+    //           "Company Open": balance.balance,
+    //           "Vendor Open": "Vendor Open",
+    //         },
+    //         "Vendor Name": vendorName,
+    //         "Vendor Code": vendorCode?.data?.Vendor,
+    //         total: totalSum,
+    //       });
+    //       insertDocument.push(newReco);
+    //     }
+    //   }
+
+    //   // console.log({ insertDocument });
+    //   // Save To Database
+    //   try {
+    //     await Reco.insertMany(insertDocument);
+    //   } catch (error: any) {
+    //     return res
+    //       .status(500)
+    //       .json({ error: "Internal Server Error", details: error.message });
+    //   }
+
+    //   res.send({ insertDocument });
+    // }
+
+    // if (balances) {
+    //   const insertDocument = [];
+    //   for (const balance of balances) {
+    //     if (balance.balance !== 0) {
+    //       const newReco = new Reco({
+    //         user: new mongoose.Types.ObjectId(_id),
+    //         uniqueId: recentIds?.masterId,
+    //         data: {
+    //           Particular: "Some Particular Data",
+    //           Annexure: balance.key,
+    //           "Company Open": balance.key === "A" ? balance.balance : "-",
+    //           "Vendor Open":
+    //             balance.key.startsWith("P") ||
+    //             balance.key.startsWith("F") ||
+    //             balance.key.startsWith("M") ||
+    //             balance.key.startsWith("G") ||
+    //             balance.key.startsWith("I") ||
+    //             balance.key.startsWith("L") ||
+    //             balance.key.startsWith("K")
+    //               ? balance.balance
+    //               : "-",
+    //         },
+    //         "Vendor Name": vendorName,
+    //         "Vendor Code": vendorCode?.data?.Vendor,
+    //         total: totalSum,
+    //       });
+    //       insertDocument.push(newReco);
+    //     }
+    //   }
+
+    //   // Save To Database
+    //   try {
+    //     await Reco.insertMany(insertDocument);
+    //   } catch (error: any) {
+    //     return res
+    //       .status(500)
+    //       .json({ error: "Internal Server Error", details: error.message });
+    //   }
+
+    //   res.send({ insertDocument });
+    // }
     if (balances) {
       const insertDocument = [];
       for (const balance of balances) {
-        const newReco = new Reco({
-          user: new mongoose.Types.ObjectId(_id),
-          uniqueId: recentIds?.masterId,
-          data: {
-            Particular: "Some Particular Data",
-            Annexure: balance.key,
-            Company: balance.balance,
-            Vendor: "Vendor Open",
-            // "Vendor Name": vendorName,
-            // "Vendor Code": "Some Vendor Code Data",
-          },
-          "Vendor Name": vendorName,
-          "Vendor Code": "Some Vendor Code Data",
-          total: totalSum,
-        });
-        insertDocument.push(newReco);
+        if (balance.balance !== 0) {
+          // Calculate the difference between "Company Open" and "Vendor Open"
+          const companyOpen = balance.key === "A" ? balance.balance : "-";
+          const vendorOpen =
+            balance.key.startsWith("P") ||
+            balance.key.startsWith("F") ||
+            balance.key.startsWith("M") ||
+            balance.key.startsWith("G") ||
+            balance.key.startsWith("I") ||
+            balance.key.startsWith("L") ||
+            balance.key.startsWith("K")
+              ? +balance.balance
+              : "-";
+
+          const companyOpenModified = companyOpen === "-" ? 0 : companyOpen;
+          const vendorOpenModified = vendorOpen === "-" ? 0 : vendorOpen;
+          const difference = companyOpenModified - vendorOpenModified;
+
+          const newReco = new Reco({
+            user: new mongoose.Types.ObjectId(_id),
+            uniqueId: recentIds?.masterId,
+            data: {
+              Particular: "Some Particular Data",
+              Annexure: balance.key,
+              "Company Open": companyOpen,
+              "Vendor Open": vendorOpen,
+              Difference: difference,
+            },
+            "Vendor Name": vendorName,
+            "Vendor Code": vendorCode?.data?.Vendor,
+            total: totalSum,
+          });
+          insertDocument.push(newReco);
+        }
       }
 
-      // console.log({ insertDocument });
       // Save To Database
       try {
         await Reco.insertMany(insertDocument);
@@ -2064,6 +2181,8 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           .status(500)
           .json({ error: "Internal Server Error", details: error.message });
       }
+
+      // res.send({ insertDocument });
     }
 
     return res.status(200).json({
