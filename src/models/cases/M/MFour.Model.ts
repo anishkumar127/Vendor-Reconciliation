@@ -13,6 +13,7 @@ const yourSchema = new mongoose.Schema(
     "Debit Amount(INR)": { type: String },
     "Invoice Amount": { type: String, required: false },
     "Closing Balance": { type: String },
+    "Credit Amount(INR)": { type: String },
   },
   { timestamps: true }
 );
