@@ -974,7 +974,13 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             paymentDocument &&
             (paymentDocument.startsWith("Payment") ||
               paymentDocument.endsWith("Payment") ||
-              paymentDocument.includes("Payment"))
+              paymentDocument.includes("Payment")) &&
+            (!DocumentTypeMapped.startsWith("TDS") ||
+              !DocumentTypeMapped.endsWith("TDS") ||
+              !DocumentTypeMapped.includes("TDS")) &&
+            (!DocumentTypeMapped.startsWith("Debit note") ||
+              !DocumentTypeMapped.endsWith("Debit note") ||
+              !DocumentTypeMapped.includes("Debit note"))
           ) {
             const closingBalanceString =
               ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
