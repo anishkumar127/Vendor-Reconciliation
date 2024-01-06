@@ -7,8 +7,9 @@ const yourSchema = new mongoose.Schema(
     data: {
       Particular: { type: String, required: false },
       Annexure: { type: String, required: false },
-      Company: { type: String, required: false },
-      Vendor: { type: String, required: false },
+      "Company Open": { type: String, required: false },
+      "Vendor Open": { type: String, required: false },
+      Difference: { type: String, required: false },
       // "Vendor Name": { type: String, required: false },
       // "Vendor Code": { type: String, required: false },
     },
