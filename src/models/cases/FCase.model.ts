@@ -19,6 +19,8 @@ const yourSchema = new mongoose.Schema(
     "Debit Amount(INR)": { type: String },
     "TDS Amount": { type: String },
     "O/s as per": { type: String },
+    "Closing Balance": { type: String },
+    "Credit Amount(INR)": { type: String },
   },
   { timestamps: true }
 );

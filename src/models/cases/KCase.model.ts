@@ -15,6 +15,7 @@ const yourSchema = new mongoose.Schema(
     "Grn Number": { type: String },
     "Credit Amount(INR)": { type: String },
     "Debit Amount(INR)": { type: String },
+    "Closing Balance": { type: String },
     "Invoice Amount": { type: String, required: false },
     "O/s as per": { type: String },
   },
