@@ -9,7 +9,7 @@ export const userSignUpController = async (req: Request, res: Response) => {
   try {
     const { username, email, fullName, password } = req.body;
     if (!username || !email || !fullName || !password)
-      return res.status(404).json({ error: "Please provied all fields!" });
+      return res.status(404).json({ error: "Please provide all fields!" });
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existingUser) {
       return res
@@ -91,7 +91,7 @@ export const userSignInController = async (req: Request, res: Response) => {
   if (email === "master@gmail.com" && password === "master") {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: "user not found!" });
+      return res.status(404).json({ error: "user not found!" });
     }
     // const isMatched = await bcrypt.compare(password, user.password);
     // if (!isMatched) return res.status(400).json({ error: "password is Wrong!" });
@@ -118,7 +118,7 @@ export const userSignInController = async (req: Request, res: Response) => {
   } else {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: "user not found!" });
+      return res.status(404).json({ error: "user not found!" });
     }
     const isMatched = await bcrypt.compare(password, user.password);
     if (!isMatched)
