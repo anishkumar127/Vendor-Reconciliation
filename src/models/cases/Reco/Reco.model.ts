@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const yourSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    uniqueId: { type: String, required: true },
+    uniqueId: { type: String, required: true, index: true },
     data: {
       Particular: { type: String, required: false },
       Annexure: { type: String, required: false },
