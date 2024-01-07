@@ -13,7 +13,10 @@ const yourSchema = new mongoose.Schema(
       // "Vendor Name": { type: String, required: false },
       // "Vendor Code": { type: String, required: false },
     },
-    total: {
+    companyTotal: {
+      type: String,
+    },
+    vendorTotal: {
       type: String,
     },
     "Vendor Name": { type: String, required: false },
