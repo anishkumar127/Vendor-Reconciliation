@@ -3,10 +3,10 @@ import mongoose, { Schema } from "mongoose";
 export const RecentIdsSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    masterId: { type: Schema.Types.Mixed, required: false },
-    vendorId: { type: Schema.Types.Mixed, required: false },
-    detailsId: { type: Schema.Types.Mixed, required: false },
-    reportId: { type: Schema.Types.Mixed, required: false },
+    masterId: { type: Schema.Types.Mixed, required: false, index: true },
+    vendorId: { type: Schema.Types.Mixed, required: false, index: true },
+    detailsId: { type: Schema.Types.Mixed, required: false, index: true },
+    reportId: { type: Schema.Types.Mixed, required: false, index: true },
   },
   { timestamps: true }
 );

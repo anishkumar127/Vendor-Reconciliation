@@ -39,8 +39,8 @@ async function getModelByString(str: any) {
         ref: "User",
         required: true,
       },
-      fileName: { type: String, required: true },
-      uniqueId: { type: String, required: true },
+      fileName: { type: String, required: true, index: true },
+      uniqueId: { type: String, required: true, index: true },
       data: mongoose.Schema.Types.Mixed,
     },
     { timestamps: true }
@@ -1303,77 +1303,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           .json({ error: "Internal Server Error", details: error.message });
       }
     }
-    // let LOneBalanceSum: number = 0;
-
-    // <--------------------- L ONE DATABASE ------------------------->
-    // if (matchLCaseData1) {
-    //   const insertDocuments = [];
-
-    //   let idx: number = 1;
-    //   for (const item of matchLCaseData1) {
-    //     const debitAmount = item?.data["Debit Amount(INR)"];
-
-    //     const LCaseInstance = {
-    //       user: new mongoose.Types.ObjectId(_id),
-    //       uniqueId: recentIds?.masterId,
-    //       SNO: idx++,
-    //       "Company Code": item?.data["Company Code"],
-    //       "Vendor Code": item?.data["Vendor Code"],
-    //       "Document Number": item?.data["Document Number"],
-    //       "Document Date": item?.data["Document Date"],
-    //       "Invoice Number": item?.data["Invoice Number"],
-    //       Amount: item?.data["Debit Amount(INR)"],
-    //     };
-    //     LOneBalanceSum += Number(debitAmount);
-    //     insertDocuments.push(LCaseInstance);
-    //   }
-
-    //   // Save To Database
-    //   try {
-    //     if (insertDocuments.length > 0) {
-    //       await LCase.insertMany(insertDocuments);
-    //     }
-    //   } catch (error: any) {
-    //     return res
-    //       .status(500)
-    //       .json({ error: "Internal Server Error", details: error.message });
-    //   }
-    // }
-
-    // let mOneBalanceSum: number = 0;
-
-    // <--------------------- M ONE DATABASE ------------------------->
-    // if (matchMCaseData1) {
-    //   const insertDocuments = [];
-    //   let idx: number = 1;
-    //   for (const item of matchMCaseData1) {
-    //     const debitAmount = item?.data["Debit Amount(INR)"];
-
-    //     const MCaseInstance = {
-    //       user: new mongoose.Types.ObjectId(_id),
-    //       uniqueId: recentIds?.masterId,
-    //       SNO: idx++,
-    //       "Company Code": item?.data["Company Code"],
-    //       "Vendor Code": item?.data["Vendor Code"],
-    //       "Document Date": item?.data["Document Date"],
-    //       "Invoice Number": item?.data["Invoice Number"],
-    //       Amount: item?.data["Debit Amount(INR)"],
-    //       "Invoice Amount": item?.data["Invoice Amount"],
-    //     };
-    //     mOneBalanceSum += Number(debitAmount);
-    //     insertDocuments.push(MCaseInstance);
-    //   }
-    //   // Save To Database
-    //   try {
-    //     if (insertDocuments.length > 0) {
-    //       await MCase.insertMany(insertDocuments);
-    //     }
-    //   } catch (error: any) {
-    //     return res
-    //       .status(500)
-    //       .json({ error: "Internal Server Error", details: error.message });
-    //   }
-    // }
 
     // <-------------------------- TWO RIGHT ------------------------------>
     // <------------------- P TWO DATABASE ------------------------->
@@ -1561,78 +1490,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           .json({ error: "Internal Server Error", details: error.message });
       }
     }
-
-    // <--------------------- L3 under TWO LEFT DATABASE ------------------------->
-    // let LThreeBalanceSum: number = 0;
-
-    // if (matchLCaseDataTwo) {
-    //   const insertDocuments = [];
-
-    //   let idx: number = 1;
-    //   for (const item of matchLCaseDataTwo) {
-    //     const debitAmount = item?.data["Debit Amount(INR)"];
-
-    //     const LCaseInstance = {
-    //       user: new mongoose.Types.ObjectId(_id),
-    //       uniqueId: recentIds?.masterId,
-    //       SNO: idx++,
-    //       "Company Code": item?.data["Company Code"],
-    //       "Vendor Code": item?.data["Vendor Code"],
-    //       "Document Number": item?.data["Document Number"],
-    //       "Document Date": item?.data["Document Date"],
-    //       "Invoice Number": item?.data["Invoice Number"],
-    //       Amount: item?.data["Debit Amount(INR)"],
-    //     };
-    //     LThreeBalanceSum += Number(debitAmount);
-    //     insertDocuments.push(LCaseInstance);
-    //   }
-    //   // Save To Database
-    //   try {
-    //     if (insertDocuments.length > 0) {
-    //       await LThreeCase.insertMany(insertDocuments);
-    //     }
-    //   } catch (error: any) {
-    //     return res
-    //       .status(500)
-    //       .json({ error: "Internal Server Error", details: error.message });
-    //   }
-    // }
-
-    // <--------------------- M 4 Under TWO  LEFT DATABASE ------------------------->
-    // let mFourBalanceSum: number = 0;
-
-    // if (matchMCaseDataTwo) {
-    //   const insertDocuments = [];
-
-    //   let idx: number = 1;
-    //   for (const item of matchMCaseDataTwo) {
-    //     const debitAmount = item?.data["Debit Amount(INR)"];
-
-    //     const MCaseInstance = {
-    //       user: new mongoose.Types.ObjectId(_id),
-    //       uniqueId: recentIds?.masterId,
-    //       SNO: idx++,
-    //       "Company Code": item?.data["Company Code"],
-    //       "Vendor Code": item?.data["Vendor Code"],
-    //       "Document Date": item?.data["Document Date"],
-    //       "Invoice Number": item?.data["Invoice Number"],
-    //       Amount: item?.data["Debit Amount(INR)"],
-    //       "Invoice Amount": item?.data["Invoice Amount"],
-    //     };
-    //     mFourBalanceSum += Number(debitAmount);
-    //     insertDocuments.push(MCaseInstance);
-    //   }
-    //   // Save To Database
-    //   try {
-    //     if (insertDocuments.length > 0) {
-    //       await MFourCase.insertMany(insertDocuments);
-    //     }
-    //   } catch (error: any) {
-    //     return res
-    //       .status(500)
-    //       .json({ error: "Internal Server Error", details: error.message });
-    //   }
-    // }
 
     // OTHER
 
@@ -2016,24 +1873,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       aOne +
       fOne;
 
-    // const balances = [
-    //   { key: "POne", balance: pOne },
-    //   { key: "KOne", balance: kOne },
-    //   { key: "GOne", balance: gOne },
-    //   { key: "IOne", balance: iOne },
-    //   { key: "PTwo", balance: pTwo },
-    //   { key: "KTwo", balance: kTwo },
-    //   { key: "GTwo", balance: gTwo },
-    //   { key: "ITwo", balance: iTwo },
-    //   { key: "MFive", balance: mFive },
-    //   { key: "MThree", balance: mThree },
-    //   { key: "LFour", balance: LFour },
-    //   { key: "MTwo", balance: mTwo },
-    //   { key: "LTwo", balance: LTwo },
-    //   { key: "AOne", balance: aOne },
-    //   { key: "FOne", balance: fOne },
-    // ];
-
     const balances = [
       { key: "P1", balance: pOne },
       { key: "K1", balance: kOne },
@@ -2057,83 +1896,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       "data.Vendor Name": vendorName,
     });
 
-    // console.log({ vendorCode });
-
-    // if (balances) {
-    //   const insertDocument = [];
-    //   for (const balance of balances) {
-    //     if (balance.balance !== 0) {
-    //       const newReco = new Reco({
-    //         user: new mongoose.Types.ObjectId(_id),
-    //         uniqueId: recentIds?.masterId,
-    //         data: {
-    //           Particular: "Some Particular Data",
-    //           Annexure: balance.key,
-    //           "Company Open": balance.balance,
-    //           "Vendor Open": "Vendor Open",
-    //         },
-    //         "Vendor Name": vendorName,
-    //         "Vendor Code": vendorCode?.data?.Vendor,
-    //         total: totalSum,
-    //       });
-    //       insertDocument.push(newReco);
-    //     }
-    //   }
-
-    //   // console.log({ insertDocument });
-    //   // Save To Database
-    //   try {
-    //     await Reco.insertMany(insertDocument);
-    //   } catch (error: any) {
-    //     return res
-    //       .status(500)
-    //       .json({ error: "Internal Server Error", details: error.message });
-    //   }
-
-    //   res.send({ insertDocument });
-    // }
-
-    // if (balances) {
-    //   const insertDocument = [];
-    //   for (const balance of balances) {
-    //     if (balance.balance !== 0) {
-    //       const newReco = new Reco({
-    //         user: new mongoose.Types.ObjectId(_id),
-    //         uniqueId: recentIds?.masterId,
-    //         data: {
-    //           Particular: "Some Particular Data",
-    //           Annexure: balance.key,
-    //           "Company Open": balance.key === "A" ? balance.balance : "-",
-    //           "Vendor Open":
-    //             balance.key.startsWith("P") ||
-    //             balance.key.startsWith("F") ||
-    //             balance.key.startsWith("M") ||
-    //             balance.key.startsWith("G") ||
-    //             balance.key.startsWith("I") ||
-    //             balance.key.startsWith("L") ||
-    //             balance.key.startsWith("K")
-    //               ? balance.balance
-    //               : "-",
-    //         },
-    //         "Vendor Name": vendorName,
-    //         "Vendor Code": vendorCode?.data?.Vendor,
-    //         total: totalSum,
-    //       });
-    //       insertDocument.push(newReco);
-    //     }
-    //   }
-
-    //   // Save To Database
-    //   try {
-    //     await Reco.insertMany(insertDocument);
-    //   } catch (error: any) {
-    //     return res
-    //       .status(500)
-    //       .json({ error: "Internal Server Error", details: error.message });
-    //   }
-
-    //   res.send({ insertDocument });
-    // }
     if (balances) {
       const insertDocument = [];
       for (const balance of balances) {
