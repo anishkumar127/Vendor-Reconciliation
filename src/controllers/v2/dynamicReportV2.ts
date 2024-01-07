@@ -81,56 +81,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     return res.status(404).json({ error: "no recent ids present." });
 
   try {
-    // const total = await Collection.aggregate([
-    //   {
-    //     $match: {
-    //       "data.Vendor Name": vendorName,
-    //       uniqueId: recentIds?.masterId,
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: null,
-    //       masterTotalClosingSum: {
-    //         $sum: {
-    //           $toInt: "$data.Closing Balance",
-    //         },
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 0,
-    //     },
-    //   },
-    //   {
-    //     $unionWith: {
-    //       coll: vendorCollection.collection.name,
-    //       pipeline: [
-    //         {
-    //           $match: {
-    //             uniqueId: recentIds?.vendorId,
-    //           },
-    //         },
-    //         {
-    //           $group: {
-    //             _id: null,
-    //             vendorTotalClosingBalance: {
-    //               $toInt: "$data.Closing Balance",
-    //             },
-    //           },
-    //         },
-
-    //         {
-    //           $project: {
-    //             _id: 0,
-    //             vendorTotalClosingBalance: 1,
-    //           },
-    //         },
-    //       ],
-    //     },
-    //   },
-    // ]);
     const total = await Collection.aggregate([
       {
         $match: {
@@ -193,7 +143,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       },
     ]);
 
-    // res.send({ total });
     // test
 
     const LeftSideAggregation = await Collection.aggregate([
@@ -1986,11 +1935,9 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     //   aOne +
     //   fOne;
 
-    // res.send(total);
     const masterTotal = total[0]?.masterTotalClosingSum;
     const vendorTotal = total[1]?.vendorTotalClosingBalance;
 
-    // res.send({ masterTotal, vendorTotal });
     const balances = [
       { key: "P1", balance: pOne },
       { key: "K1", balance: kOne },
@@ -2062,8 +2009,6 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           .status(500)
           .json({ error: "Internal Server Error", details: error.message });
       }
-
-      // res.send({ insertDocument });
     }
 
     return res.status(200).json({
