@@ -1850,40 +1850,40 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       }
     }
 
-    console.log({
-      pOneBalanceSum,
-      kOneBalanceSum,
-      gOneBalanceSum,
-      iOneBalanceSum,
-      pTwoBalanceSum,
-      kTwoBalanceSum,
-      gTwoBalanceSum,
-      iTwoBalanceSum,
-      mFiveBalanceSum,
-      mThreeBalanceSum,
-      LFourBalanceSum,
-      mTwoBalanceSum,
-      LTwoBalanceSum,
-      aOneBalanceSum,
-      fOneBalanceSum,
-    });
-    console.log("CREDIT", {
-      pOneBalanceSumCredit,
-      kOneBalanceSumCredit,
-      gOneBalanceSumCredit,
-      iOneBalanceSumCredit,
-      pTwoBalanceSumCredit,
-      kTwoBalanceSumCredit,
-      gTwoBalanceSumCredit,
-      iTwoBalanceSumCredit,
-      mFiveBalanceSumCredit,
-      mThreeBalanceSumCredit,
-      LFourBalanceSumCredit,
-      mTwoBalanceSumCredit,
-      LTwoBalanceSumCredit,
-      aOneBalanceSumCredit,
-      fOneBalanceSumCredit,
-    });
+    // console.log({
+    //   pOneBalanceSum,
+    //   kOneBalanceSum,
+    //   gOneBalanceSum,
+    //   iOneBalanceSum,
+    //   pTwoBalanceSum,
+    //   kTwoBalanceSum,
+    //   gTwoBalanceSum,
+    //   iTwoBalanceSum,
+    //   mFiveBalanceSum,
+    //   mThreeBalanceSum,
+    //   LFourBalanceSum,
+    //   mTwoBalanceSum,
+    //   LTwoBalanceSum,
+    //   aOneBalanceSum,
+    //   fOneBalanceSum,
+    // });
+    // console.log("CREDIT", {
+    //   pOneBalanceSumCredit,
+    //   kOneBalanceSumCredit,
+    //   gOneBalanceSumCredit,
+    //   iOneBalanceSumCredit,
+    //   pTwoBalanceSumCredit,
+    //   kTwoBalanceSumCredit,
+    //   gTwoBalanceSumCredit,
+    //   iTwoBalanceSumCredit,
+    //   mFiveBalanceSumCredit,
+    //   mThreeBalanceSumCredit,
+    //   LFourBalanceSumCredit,
+    //   mTwoBalanceSumCredit,
+    //   LTwoBalanceSumCredit,
+    //   aOneBalanceSumCredit,
+    //   fOneBalanceSumCredit,
+    // });
 
     const pOne = pOneBalanceSum - pOneBalanceSumCredit;
     const kOne = kOneBalanceSum - kOneBalanceSumCredit;
@@ -1901,23 +1901,23 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     const aOne = aOneBalanceSum - aOneBalanceSumCredit;
     const fOne = fOneBalanceSum - fOneBalanceSumCredit;
 
-    console.log({
-      pOne,
-      kOne,
-      gOne,
-      iOne,
-      pTwo,
-      kTwo,
-      gTwo,
-      iTwo,
-      mFive,
-      mThree,
-      LFour,
-      mTwo,
-      LTwo,
-      aOne,
-      fOne,
-    });
+    // console.log({
+    //   pOne,
+    //   kOne,
+    //   gOne,
+    //   iOne,
+    //   pTwo,
+    //   kTwo,
+    //   gTwo,
+    //   iTwo,
+    //   mFive,
+    //   mThree,
+    //   LFour,
+    //   mTwo,
+    //   LTwo,
+    //   aOne,
+    //   fOne,
+    // });
     // const totalSum =
     //   pOne +
     //   kOne +
@@ -1996,6 +1996,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Vendor Code": vendorCode?.data?.Vendor,
             companyTotal: masterTotal,
             vendorTotal: vendorTotal,
+            period: dateTypeMapped,
           });
           insertDocument.push(newReco);
         }
@@ -2009,6 +2010,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           .status(500)
           .json({ error: "Internal Server Error", details: error.message });
       }
+      // res.send(insertDocument);
     }
 
     return res.status(200).json({
