@@ -21,6 +21,7 @@ const yourSchema = new mongoose.Schema(
     },
     "Vendor Name": { type: String, required: false },
     "Vendor Code": { type: String, required: false },
+    period: { type: Date, required: true },
   },
   { timestamps: true }
 );

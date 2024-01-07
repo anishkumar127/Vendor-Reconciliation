@@ -1996,6 +1996,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             "Vendor Code": vendorCode?.data?.Vendor,
             companyTotal: masterTotal,
             vendorTotal: vendorTotal,
+            period: dateTypeMapped,
           });
           insertDocument.push(newReco);
         }
@@ -2009,6 +2010,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           .status(500)
           .json({ error: "Internal Server Error", details: error.message });
       }
+      // res.send(insertDocument);
     }
 
     return res.status(200).json({
