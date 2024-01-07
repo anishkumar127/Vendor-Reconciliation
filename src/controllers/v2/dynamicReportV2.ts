@@ -81,6 +81,119 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     return res.status(404).json({ error: "no recent ids present." });
 
   try {
+    // const total = await Collection.aggregate([
+    //   {
+    //     $match: {
+    //       "data.Vendor Name": vendorName,
+    //       uniqueId: recentIds?.masterId,
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       masterTotalClosingSum: {
+    //         $sum: {
+    //           $toInt: "$data.Closing Balance",
+    //         },
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //     },
+    //   },
+    //   {
+    //     $unionWith: {
+    //       coll: vendorCollection.collection.name,
+    //       pipeline: [
+    //         {
+    //           $match: {
+    //             uniqueId: recentIds?.vendorId,
+    //           },
+    //         },
+    //         {
+    //           $group: {
+    //             _id: null,
+    //             vendorTotalClosingBalance: {
+    //               $toInt: "$data.Closing Balance",
+    //             },
+    //           },
+    //         },
+
+    //         {
+    //           $project: {
+    //             _id: 0,
+    //             vendorTotalClosingBalance: 1,
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   },
+    // ]);
+    const total = await Collection.aggregate([
+      {
+        $match: {
+          "data.Vendor Name": vendorName,
+          uniqueId: recentIds?.masterId,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          masterTotalClosingSum: {
+            $sum: {
+              $convert: {
+                input: "$data.Closing Balance",
+                to: "int",
+                onError: 0, // Set a default value in case of conversion errors
+                onNull: 0, // Set a default value if the field is null
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+      {
+        $unionWith: {
+          coll: vendorCollection.collection.name,
+          pipeline: [
+            {
+              $match: {
+                uniqueId: recentIds?.vendorId,
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                vendorTotalClosingBalance: {
+                  $sum: {
+                    $convert: {
+                      input: "$data.Closing Balance",
+                      to: "int",
+                      onError: 0,
+                      onNull: 0,
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                vendorTotalClosingBalance: 1,
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    // res.send({ total });
     // test
 
     const LeftSideAggregation = await Collection.aggregate([
@@ -1856,23 +1969,28 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       aOne,
       fOne,
     });
-    const totalSum =
-      pOne +
-      kOne +
-      gOne +
-      iOne +
-      pTwo +
-      kTwo +
-      gTwo +
-      iTwo +
-      mFive +
-      mThree +
-      LFour +
-      mTwo +
-      LTwo +
-      aOne +
-      fOne;
+    // const totalSum =
+    //   pOne +
+    //   kOne +
+    //   gOne +
+    //   iOne +
+    //   pTwo +
+    //   kTwo +
+    //   gTwo +
+    //   iTwo +
+    //   mFive +
+    //   mThree +
+    //   LFour +
+    //   mTwo +
+    //   LTwo +
+    //   aOne +
+    //   fOne;
 
+    // res.send(total);
+    const masterTotal = total[0]?.masterTotalClosingSum;
+    const vendorTotal = total[1]?.vendorTotalClosingBalance;
+
+    // res.send({ masterTotal, vendorTotal });
     const balances = [
       { key: "P1", balance: pOne },
       { key: "K1", balance: kOne },
@@ -1929,7 +2047,8 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             },
             "Vendor Name": vendorName,
             "Vendor Code": vendorCode?.data?.Vendor,
-            total: totalSum,
+            companyTotal: masterTotal,
+            vendorTotal: vendorTotal,
           });
           insertDocument.push(newReco);
         }
