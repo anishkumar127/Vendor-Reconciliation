@@ -18,7 +18,7 @@ import PTwoCase from "../../models/cases/right/PTwoCase.model";
 import { RecentIds } from "../../models/mixed/RecentIds.model";
 import { getUser } from "../../services/auth";
 import Reco from "../../models/cases/Reco/Reco.model";
-
+import moment from 'moment'
 // Annexure FORMAT
 // const Annexure: any[] = ["AnnexureP", "AnnexureK"];
 
@@ -569,7 +569,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             localField: "$data.Invoice Number",
             uniqueId: recentIds?.vendorId
           },
-           pipeline: [
+          pipeline: [
             {
               $match: {
                 "data.Invoice Number": {
@@ -917,21 +917,36 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         ACase_And_RightSideAggregation[i]?.resultcompletes &&
         ACase_And_RightSideAggregation[i]?.resultcompletes?.data
       ) {
-        const documentDate = new Date(
-          ACase_And_RightSideAggregation[i]?.resultcompletes.data?.[
-            "Document Date"
-          ]
-        );
-        // eslint-disable-next-line no-constant-condition
-        const currentDate = new Date(dateTypeMapped)
-          ? new Date(dateTypeMapped)
-          : new Date();
+        //         const documentDate = new Date(
+        //           ACase_And_RightSideAggregation[i]?.resultcompletes.data?.[
+        //             "Document Date"
+        //           ]
+        //         );
+        //         console.log({documentDate})
+        //         console.log({dateTypeMapped})
+        //         // eslint-disable-next-line no-constant-condition
+        //         const currentDate = new Date(dateTypeMapped)
+        //           ? new Date(dateTypeMapped)
+        //           : new Date();
+        // console.log({currentDate})
+        //         // FUTURE DATE - A CASE.
+        //         console.log("CHECK",documentDate > currentDate)
 
-        // FUTURE DATE - A CASE.
-        if (documentDate > currentDate) {
+
+        const documentDate = moment(ACase_And_RightSideAggregation[i]?.resultcompletes.data?.["Document Date"]);
+        console.log('Document Date:', documentDate.format('MM / DD / YYYY'));
+
+        const currentDate = moment(dateTypeMapped || new Date());
+        console.log('Current Date:', currentDate.format('MM / DD / YYYY'));
+
+        const isDocumentDateGreaterThanCurrent = documentDate.isAfter(currentDate);
+
+        // console.log('Is Document Date greater than Current Date?', isDocumentDateGreaterThanCurrent);
+
+        if (isDocumentDateGreaterThanCurrent) {
           const DocumentTypeMapped =
             ACase_And_RightSideAggregation[i]?.resultcompletes?.data[
-              "DocumentTypeMapped"
+            "DocumentTypeMapped"
             ];
           if (
             DocumentTypeMapped &&
@@ -952,11 +967,11 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           //   ];
           const DocumentTypeMapped =
             ACase_And_RightSideAggregation[i]?.resultcompletes?.data[
-              "DocumentTypeMapped"
+            "DocumentTypeMapped"
             ];
           const paymentDocument =
             ACase_And_RightSideAggregation[i]?.resultcompletes?.data[
-              "PaymentTypeMapped"
+            "PaymentTypeMapped"
             ];
           // I CASE
           let IClosingBalance1: string | number = 0;
@@ -976,7 +991,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             // CLOSING BALANCE 3RD FILE
             const closingBalanceString =
               ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
-                "Debit Amount(INR)"
+              "Debit Amount(INR)"
               ];
 
             if (closingBalanceString) {
@@ -1003,7 +1018,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             // Debit Amount(INR) 3RD FILE
             const closingBalanceString =
               ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
-                "Debit Amount(INR)"
+              "Debit Amount(INR)"
               ];
 
             if (closingBalanceString) {
@@ -1030,7 +1045,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             // Debit Amount(INR) 3RD FILE
             const closingBalanceString =
               ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
-                "Debit Amount(INR)"
+              "Debit Amount(INR)"
               ];
 
             if (closingBalanceString) {
@@ -1059,7 +1074,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           ) {
             const closingBalanceString =
               ACase_And_RightSideAggregation[i]?.resultcompletes?.data?.[
-                "Debit Amount(INR)"
+              "Debit Amount(INR)"
               ];
 
             if (closingBalanceString) {
@@ -1204,24 +1219,24 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         //   debitAmount !== null &&
         //   debitAmount !== ""
         // ) {
-          const pCaseInstance = {
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data["Company Code"],
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Grn Number": item?.data["Grn Number"],
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
-            "Debit Amount(INR)": debitAmount,
-            "Closing Balance": item?.data["Closing Balance"] ?? "",
-          };
+        const pCaseInstance = {
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Grn Number": item?.data["Grn Number"],
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Debit Amount(INR)": debitAmount,
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+        };
 
-          pOneBalanceSum += Number(debitAmount);
-          const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
-          pOneBalanceSumCredit += Number(creditAmount);
-          insertDocuments.push(pCaseInstance);
+        pOneBalanceSum += Number(debitAmount);
+        const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
+        pOneBalanceSumCredit += Number(creditAmount);
+        insertDocuments.push(pCaseInstance);
         // }
       }
 
@@ -1252,24 +1267,24 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         //   debitAmount !== null &&
         //   debitAmount !== ""
         // ) {
-          const kCaseInstance = {
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data["Company Code"],
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Grn Number": item?.data["Grn Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
-            "Closing Balance": item?.data["Closing Balance"] ?? "",
-          };
+        const kCaseInstance = {
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Grn Number": item?.data["Grn Number"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+        };
 
-          kOneBalanceSum += Number(debitAmount);
-          const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
-          kOneBalanceSumCredit += Number(creditAmount);
-          insertDocuments.push(kCaseInstance);
+        kOneBalanceSum += Number(debitAmount);
+        const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
+        kOneBalanceSumCredit += Number(creditAmount);
+        insertDocuments.push(kCaseInstance);
         // }
       }
 
@@ -1299,27 +1314,27 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         //   debitAmount !== null &&
         //   debitAmount !== ""
         // ) {
-          const gCaseInstance = {
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data?.["Company Code"] || "",
-            "Vendor Code": item?.data?.["Vendor Code"],
-            "Document Number": item?.data?.["Document Number"],
-            "Document Date": item?.data?.["Document Date"],
-            "Invoice Number": item?.data?.["Invoice Number"],
-            "Invoice Amount": item?.data?.["Invoice Amount"],
-            "Invoice Date": item?.data?.["Invoice Date"],
-            "Payment Document": item?.data?.["Payment Document"],
-            "Grn Number": item?.data?.["Grn Number"],
-            "Debit Amount(INR)": item?.data?.["Debit Amount(INR)"],
-            "Credit Amount(INR)": item?.data?.["Credit Amount(INR)"],
-            "Closing Balance": item?.data["Closing Balance"] ?? "",
-          };
-          gOneBalanceSum += Number(debitAmount);
-          const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
-          gOneBalanceSumCredit += Number(creditAmount);
-          insertDocuments.push(gCaseInstance);
+        const gCaseInstance = {
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data?.["Company Code"] || "",
+          "Vendor Code": item?.data?.["Vendor Code"],
+          "Document Number": item?.data?.["Document Number"],
+          "Document Date": item?.data?.["Document Date"],
+          "Invoice Number": item?.data?.["Invoice Number"],
+          "Invoice Amount": item?.data?.["Invoice Amount"],
+          "Invoice Date": item?.data?.["Invoice Date"],
+          "Payment Document": item?.data?.["Payment Document"],
+          "Grn Number": item?.data?.["Grn Number"],
+          "Debit Amount(INR)": item?.data?.["Debit Amount(INR)"],
+          "Credit Amount(INR)": item?.data?.["Credit Amount(INR)"],
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+        };
+        gOneBalanceSum += Number(debitAmount);
+        const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
+        gOneBalanceSumCredit += Number(creditAmount);
+        insertDocuments.push(gCaseInstance);
         // }
       }
       // Save To Database
@@ -1348,23 +1363,23 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         //   debitAmount !== null &&
         //   debitAmount !== ""
         // ) {
-          const ICaseInstance = {
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Due Date": item?.data["Due Date"],
-            "Invoice Amount": item?.data["Invoice Amount"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
-            "Closing Balance": item?.data["Closing Balance"] ?? "",
-          };
-          iOneBalanceSum += Number(debitAmount);
-          const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
-          iOneBalanceSumCredit += Number(creditAmount);
-          insertDocuments.push(ICaseInstance);
+        const ICaseInstance = {
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Due Date": item?.data["Due Date"],
+          "Invoice Amount": item?.data["Invoice Amount"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+        };
+        iOneBalanceSum += Number(debitAmount);
+        const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
+        iOneBalanceSumCredit += Number(creditAmount);
+        insertDocuments.push(ICaseInstance);
         // }
       }
       // Save To Database
@@ -1396,24 +1411,24 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         //   debitAmount !== null &&
         //   debitAmount !== ""
         // ) {
-          const pCaseInstance = {
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data["Company Code"],
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Grn Number": item?.data["Grn Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
-            "Closing Balance": item?.data["Closing Balance"] ?? "",
-          };
+        const pCaseInstance = {
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Grn Number": item?.data["Grn Number"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+        };
 
-          pTwoBalanceSum += Number(debitAmount);
-          const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
-          pTwoBalanceSumCredit += Number(creditAmount);
-          insertDocuments.push(pCaseInstance);
+        pTwoBalanceSum += Number(debitAmount);
+        const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
+        pTwoBalanceSumCredit += Number(creditAmount);
+        insertDocuments.push(pCaseInstance);
         // }
       }
       // Save To Database
@@ -1444,24 +1459,24 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         //   debitAmount !== null &&
         //   debitAmount !== ""
         // ) {
-          const kCaseInstance = {
-            user: new mongoose.Types.ObjectId(_id),
-            uniqueId: recentIds?.masterId,
-            SNO: idx++,
-            "Company Code": item?.data["Company Code"],
-            "Document Number": item?.data["Document Number"],
-            "Document Date": item?.data["Document Date"],
-            "Invoice Number": item?.data["Invoice Number"],
-            "Grn Number": item?.data["Grn Number"],
-            "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
-            "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
-            "Closing Balance": item?.data["Closing Balance"] ?? "",
-          };
+        const kCaseInstance = {
+          user: new mongoose.Types.ObjectId(_id),
+          uniqueId: recentIds?.masterId,
+          SNO: idx++,
+          "Company Code": item?.data["Company Code"],
+          "Document Number": item?.data["Document Number"],
+          "Document Date": item?.data["Document Date"],
+          "Invoice Number": item?.data["Invoice Number"],
+          "Grn Number": item?.data["Grn Number"],
+          "Debit Amount(INR)": item?.data["Debit Amount(INR)"] ?? "",
+          "Credit Amount(INR)": item?.data["Credit Amount(INR)"] ?? "",
+          "Closing Balance": item?.data["Closing Balance"] ?? "",
+        };
 
-          kTwoBalanceSum += Number(debitAmount);
-          const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
-          kTwoBalanceSumCredit += Number(creditAmount);
-          insertDocuments.push(kCaseInstance);
+        kTwoBalanceSum += Number(debitAmount);
+        const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
+        kTwoBalanceSumCredit += Number(creditAmount);
+        insertDocuments.push(kCaseInstance);
         // }
       }
 
@@ -1824,7 +1839,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     if (CaseF) {
       let idx: number = 1;
       const insertDocuments = [];
-// console.log({CaseF})
+      // console.log({CaseF})
       for (const item of CaseF) {
         const debitAmount = item?.data["Closing Balance"];
 
@@ -1983,12 +1998,12 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           const companyOpen = balance.key === "A" ? balance.balance : "-";
           const vendorOpen =
             balance.key.startsWith("P") ||
-            balance.key.startsWith("F") ||
-            balance.key.startsWith("M") ||
-            balance.key.startsWith("G") ||
-            balance.key.startsWith("I") ||
-            balance.key.startsWith("L") ||
-            balance.key.startsWith("K")
+              balance.key.startsWith("F") ||
+              balance.key.startsWith("M") ||
+              balance.key.startsWith("G") ||
+              balance.key.startsWith("I") ||
+              balance.key.startsWith("L") ||
+              balance.key.startsWith("K")
               ? +balance.balance
               : "-";
 
