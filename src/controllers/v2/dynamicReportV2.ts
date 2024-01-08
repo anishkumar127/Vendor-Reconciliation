@@ -212,7 +212,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           data: 1,
           result: 1,
           first: {
-            $toInt: {
+            $toDouble: {
               $replaceAll: {
                 input: "$data.Closing Balance",
                 find: ",",
@@ -221,7 +221,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             },
           },
           second: {
-            $toInt: {
+            $toDouble: {
               $replaceAll: {
                 input: "$result.data.Closing Balance",
                 find: ",",
@@ -507,7 +507,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           data: 1,
           result: 1,
           first: {
-            $toInt: {
+            $toDouble: {
               $replaceAll: {
                 input: "$data.Closing Balance",
                 find: ",",
@@ -516,7 +516,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             },
           },
           second: {
-            $toInt: {
+            $toDouble: {
               $replaceAll: {
                 input: "$result.data.Closing Balance",
                 find: ",",
@@ -567,23 +567,36 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           from: vendorCollection.collection.name,
           let: {
             localField: "$data.Invoice Number",
+            uniqueId: recentIds?.vendorId
           },
-          pipeline: [
+           pipeline: [
             {
               $match: {
+                "data.Invoice Number": {
+                  $exists: true,
+                  $ne: "", // This ensures that "data.Invoice Number" is not an empty string
+                  $regex: /\S+/, // This ensures that "data.Invoice Number" is not just whitespace
+                },
                 $expr: {
-                  $or: [
+                  $and: [
                     {
-                      $regexMatch: {
-                        input: "$data.Invoice Number",
-                        regex: "$$localField",
-                      },
+                      $or: [
+                        {
+                          $regexMatch: {
+                            input: "$data.Invoice Number",
+                            regex: "$$localField",
+                          },
+                        },
+                        {
+                          $regexMatch: {
+                            input: "$$localField",
+                            regex: "$data.Invoice Number",
+                          },
+                        },
+                      ],
                     },
                     {
-                      $regexMatch: {
-                        input: "$$localField",
-                        regex: "$data.Invoice Number",
-                      },
+                      $eq: ["$uniqueId", "$$uniqueId"],
                     },
                   ],
                 },
@@ -593,23 +606,23 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           as: "result",
         },
       },
-      {
-        $unwind: {
-          path: "$result",
-        },
-      },
-      {
-        $match: {
-          "result.uniqueId": recentIds?.vendorId,
-        },
-      },
-      {
-        $match: {
-          "result.data.Invoice Number": {
-            $exists: true,
-          },
-        },
-      },
+      // {
+      //   $unwind: {
+      //     path: "$result",
+      //   },
+      // },
+      // {
+      //   $match: {
+      //     "result.uniqueId": recentIds?.vendorId,
+      //   },
+      // },
+      // {
+      //   $match: {
+      //     "result.data.Invoice Number": {
+      //       $exists: true,
+      //     },
+      //   },
+      // },
       {
         $match: {
           result: {
@@ -868,7 +881,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           _id: 0,
           resultcompletes: 1,
           balance: {
-            $toInt: {
+            $toDouble: {
               $replaceAll: {
                 input: "$data.Closing Balance",
                 find: ",",
@@ -1119,7 +1132,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             $lt: [
               // CREDIT NEGATIVE
               {
-                $toInt: {
+                $toDouble: {
                   $replaceAll: {
                     input: "$data.Closing Balance",
                     find: ",",
@@ -1155,7 +1168,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
             $gt: [
               // DEBIT POSITIVE AMOUNT
               {
-                $toInt: {
+                $toDouble: {
                   $replaceAll: {
                     input: "$data.Closing Balance",
                     find: ",",
@@ -1811,7 +1824,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     if (CaseF) {
       let idx: number = 1;
       const insertDocuments = [];
-
+console.log({CaseF})
       for (const item of CaseF) {
         const debitAmount = item?.data["Closing Balance"];
 
@@ -1839,6 +1852,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
         insertDocuments.push(FCaseInstance);
       }
       // Save To Database
+      // res.send({insertDocuments})
       try {
         if (insertDocuments.length > 0) {
           await FCase.insertMany(insertDocuments);
