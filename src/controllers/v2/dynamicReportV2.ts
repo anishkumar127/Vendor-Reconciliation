@@ -1199,11 +1199,11 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       for (const item of matchPCaseData1) {
         const debitAmount = item?.data["Debit Amount(INR)"];
 
-        if (
-          debitAmount !== undefined &&
-          debitAmount !== null &&
-          debitAmount !== ""
-        ) {
+        // if (
+        //   debitAmount !== undefined &&
+        //   debitAmount !== null &&
+        //   debitAmount !== ""
+        // ) {
           const pCaseInstance = {
             user: new mongoose.Types.ObjectId(_id),
             uniqueId: recentIds?.masterId,
@@ -1222,7 +1222,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
           pOneBalanceSumCredit += Number(creditAmount);
           insertDocuments.push(pCaseInstance);
-        }
+        // }
       }
 
       // Save To Database
@@ -1247,11 +1247,11 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       for (const item of matchKCaseData1) {
         const debitAmount = item?.data["Debit Amount(INR)"];
 
-        if (
-          debitAmount !== undefined &&
-          debitAmount !== null &&
-          debitAmount !== ""
-        ) {
+        // if (
+        //   debitAmount !== undefined &&
+        //   debitAmount !== null &&
+        //   debitAmount !== ""
+        // ) {
           const kCaseInstance = {
             user: new mongoose.Types.ObjectId(_id),
             uniqueId: recentIds?.masterId,
@@ -1270,7 +1270,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
           kOneBalanceSumCredit += Number(creditAmount);
           insertDocuments.push(kCaseInstance);
-        }
+        // }
       }
 
       try {
@@ -1294,11 +1294,11 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       for (const item of matchGCaseData1) {
         const debitAmount = item?.data["Debit Amount(INR)"];
 
-        if (
-          debitAmount !== undefined &&
-          debitAmount !== null &&
-          debitAmount !== ""
-        ) {
+        // if (
+        //   debitAmount !== undefined &&
+        //   debitAmount !== null &&
+        //   debitAmount !== ""
+        // ) {
           const gCaseInstance = {
             user: new mongoose.Types.ObjectId(_id),
             uniqueId: recentIds?.masterId,
@@ -1320,7 +1320,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
           gOneBalanceSumCredit += Number(creditAmount);
           insertDocuments.push(gCaseInstance);
-        }
+        // }
       }
       // Save To Database
       try {
@@ -1343,11 +1343,11 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       for (const item of iCaseDataStore1) {
         const debitAmount = item?.data["Debit Amount(INR)"];
 
-        if (
-          debitAmount !== undefined &&
-          debitAmount !== null &&
-          debitAmount !== ""
-        ) {
+        // if (
+        //   debitAmount !== undefined &&
+        //   debitAmount !== null &&
+        //   debitAmount !== ""
+        // ) {
           const ICaseInstance = {
             user: new mongoose.Types.ObjectId(_id),
             uniqueId: recentIds?.masterId,
@@ -1365,7 +1365,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
           iOneBalanceSumCredit += Number(creditAmount);
           insertDocuments.push(ICaseInstance);
-        }
+        // }
       }
       // Save To Database
       try {
@@ -1391,11 +1391,11 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       for (const item of matchPCaseDataTwo) {
         const debitAmount = item?.data["Debit Amount(INR)"];
 
-        if (
-          debitAmount !== undefined &&
-          debitAmount !== null &&
-          debitAmount !== ""
-        ) {
+        // if (
+        //   debitAmount !== undefined &&
+        //   debitAmount !== null &&
+        //   debitAmount !== ""
+        // ) {
           const pCaseInstance = {
             user: new mongoose.Types.ObjectId(_id),
             uniqueId: recentIds?.masterId,
@@ -1414,7 +1414,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
           pTwoBalanceSumCredit += Number(creditAmount);
           insertDocuments.push(pCaseInstance);
-        }
+        // }
       }
       // Save To Database
       try {
@@ -1439,11 +1439,11 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
       for (const item of matchKCaseDataTwo) {
         const debitAmount = item?.data["Debit Amount(INR)"];
 
-        if (
-          debitAmount !== undefined &&
-          debitAmount !== null &&
-          debitAmount !== ""
-        ) {
+        // if (
+        //   debitAmount !== undefined &&
+        //   debitAmount !== null &&
+        //   debitAmount !== ""
+        // ) {
           const kCaseInstance = {
             user: new mongoose.Types.ObjectId(_id),
             uniqueId: recentIds?.masterId,
@@ -1462,7 +1462,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
           const creditAmount = item?.data["Credit Amount(INR)"] ?? 0;
           kTwoBalanceSumCredit += Number(creditAmount);
           insertDocuments.push(kCaseInstance);
-        }
+        // }
       }
 
       // Save To Database
@@ -1824,7 +1824,7 @@ export const dynamicReportV2: RequestHandler = async (req, res) => {
     if (CaseF) {
       let idx: number = 1;
       const insertDocuments = [];
-console.log({CaseF})
+// console.log({CaseF})
       for (const item of CaseF) {
         const debitAmount = item?.data["Closing Balance"];
 
